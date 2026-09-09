@@ -1,0 +1,32 @@
+{
+  "project": "IMOBI CRM",
+  "date": "2026-09-03",
+  "commit": "82f2d13d4ed85b2a55482858b639035a317aa347",
+  "base_commit": "a329f1db4d0804b26c9333768b88b5a23cca64c7",
+  "gate_prod": "BLOCKED",
+  "gate_staging": "BLOCKED",
+  "gate_recovery": "BLOCKED",
+  "checks": [
+    {"gate":"lockfile","status":"PASS","command":"pnpm install --frozen-lockfile","result":"lockfile íntegro; dependências sincronizadas"},
+    {"gate":"typecheck","status":"PASS","command":"pnpm typecheck","result":"exit 0 com NODE_OPTIONS=--max-old-space-size=8192"},
+    {"gate":"lint","status":"PASS","command":"pnpm lint","result":"0 erros; 301 warnings (305 antes das correções)"},
+    {"gate":"branding","status":"PASS","command":"pnpm test:unit <16 specs branding> --pool=threads --maxWorkers=1","result":"16 arquivos; 266 testes aprovados"},
+    {"gate":"unit-focal","status":"PASS","command":"pnpm test:unit <4 specs que excederam tempo> --pool=threads --maxWorkers=1","result":"4 arquivos; 29 testes aprovados"},
+    {"gate":"unit-full-local","status":"PARTIAL","command":"pnpm test:unit --pool=threads --maxWorkers=4","result":"605 arquivos; 6721 testes aprovados; worker threads não suporta process.chdir"},
+    {"gate":"unit-portability-fix","status":"PASS","command":"pnpm test:unit tests/unit/performed-at-um-relogio-so.test.ts --maxWorkers=1","result":"2 testes aprovados; varredura usa somente APIs do Node"},
+    {"gate":"dependency-audit","status":"PASS","command":"pnpm security:audit","result":"No known vulnerabilities found"},
+    {"gate":"build-turbopack-local","status":"BLOCKED","command":"pnpm build","result":"panic interno do Turbopack no Windows"},
+    {"gate":"build-webpack-local","status":"FAIL","command":"pnpm build --webpack","result":"client-only/server-only não resolvidos; caminho alternativo não usado pelo CI"},
+    {"gate":"shell-packaging","status":"BLOCKED","command":"pnpm test:shell","result":"todas as provas alcançadas passaram, exceto chmod 0600 sob NTFS/Git Bash"},
+    {"gate":"docker-daemon","status":"BLOCKED","command":"docker version","result":"cliente 29.5.3 presente; daemon ausente"},
+    {"gate":"db-rls","status":"BLOCKED","command":"pnpm test:db","result":"não executado: daemon Docker ausente"},
+    {"gate":"e2e-local","status":"BLOCKED","command":"pnpm test:e2e","result":"não executado: harness depende de Docker/Supabase"},
+    {"gate":"ci-base","status":"PASS","command":"gh run list --branch main","result":"ci, e2e, perf, security e imagens verdes em a329f1d"},
+    {"gate":"ci-current","status":"PASS","command":"gh pr checks 6","result":"verify, invariants, build-and-size, dependency-audit, CodeQL, E2E 1/2, imagens e boot aprovados em 82f2d13"},
+    {"gate":"release","status":"BLOCKED","command":"pnpm release:conferir; gh release list; gh api repos/hudsonlcustodio/imobitalk/tags","result":"dry-run propõe 1.11.2; nenhuma release/tag retornada; nada foi escrito"},
+    {"gate":"branch-protection","status":"PASS","command":"gh api repos/hudsonlcustodio/imobitalk/branches/main/protection","result":"strict; admins; 7 checks; force-push e deletion bloqueados; resolução de conversas exigida"},
+    {"gate":"staging","status":"BLOCKED","command":"not applicable","result":"infraestrutura e credenciais não fornecidas"},
+    {"gate":"migration","status":"BLOCKED","command":"pnpm db:migrate:check","result":"SUPABASE_DB_ADMIN_URL de staging não fornecida"},
+    {"gate":"restore","status":"BLOCKED","command":"not applicable","result":"ambiente isolado de restore não fornecido"}
+  ]
+}

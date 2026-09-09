@@ -1,0 +1,36 @@
+{
+  "source_checkpoint": "AurumTalk-v1.17.0-W1-W2-W3-W4-W5-W6-W7.zip",
+  "real_import_bug_fixed": {
+    "file": "tests/e2e/confirmar-dado-do-contato.spec.ts",
+    "from": "./lib/env-de-teste",
+    "to": "./scripts/lib/env-de-teste"
+  },
+  "static_local_imports_unresolved": 0,
+  "migration_counts": {
+    "aurum_original": 185,
+    "hardened": 213,
+    "added": 28
+  },
+  "verify_upgrade": {
+    "returncode": 0,
+    "pass": true
+  },
+  "pnpm": {
+    "path": null,
+    "version": null
+  },
+  "artifacts": [
+    "MIGRATION-RUNBOOK-V1.17.md",
+    "REGRESSION-MATRIX.md",
+    "REGRESSION-MATRIX.csv",
+    "ROLLBACK-RESTORE-RUNBOOK.md",
+    "RELEASE-GATE.md",
+    "HARDENING-REPORT.md"
+  ],
+  "gate": {
+    "STRUCTURAL": "pass",
+    "RUNTIME": "pending",
+    "RECOVERY": "pending",
+    "PRODUCTION": "blocked"
+  }
+}

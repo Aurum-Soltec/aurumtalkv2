@@ -1,0 +1,182 @@
+{
+  "dependency_decisions": {
+    "@ai-sdk/anthropic": {
+      "from": "^4.0.46",
+      "to": "^4.0.16",
+      "decision": "ALIGN_UPSTREAM_TESTED_LOCKSET"
+    },
+    "@ai-sdk/google": {
+      "from": "^4.0.58",
+      "to": "^4.0.18",
+      "decision": "ALIGN_UPSTREAM_TESTED_LOCKSET"
+    },
+    "@ai-sdk/openai": {
+      "from": "^4.0.52",
+      "to": "^4.0.56",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "@supabase/supabase-js": {
+      "from": "^2.112.4",
+      "to": "^2.114.0",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "@xyflow/react": {
+      "from": "^12.11.5",
+      "to": "^12.11.6",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "ai": {
+      "from": "^7.0.85",
+      "to": "^7.0.90",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "import-in-the-middle": {
+      "from": "^3.3.3",
+      "to": "^3.4.0",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "lucide-react": {
+      "from": "^1.37.0",
+      "to": "^1.39.0",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "next": {
+      "from": "^16.3.3",
+      "to": "^16.3.4",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "@tailwindcss/postcss": {
+      "from": null,
+      "to": "^4",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "@types/jest": {
+      "from": null,
+      "to": "^29.5.13",
+      "decision": "ADD_UPSTREAM"
+    },
+    "eslint-config-next": {
+      "from": "^16.3.3",
+      "to": "^16.2.10",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "tailwindcss": {
+      "from": "^3.4.13",
+      "to": "^4.3.3",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "typescript-eslint": {
+      "from": "^8.68.0",
+      "to": "^8.69.0",
+      "decision": "ALIGN_UPSTREAM_1.17"
+    },
+    "autoprefixer": {
+      "from": "^10.5.4",
+      "to": null,
+      "decision": "REMOVE_TAILWIND4"
+    },
+    "override:postcss": {
+      "from": "^8.5.26",
+      "to": "^8.5.26",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:sharp": {
+      "from": "^0.35.0",
+      "to": "^0.35.0",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:hono": {
+      "from": "^4.12.34",
+      "to": "^4.12.34",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:js-yaml": {
+      "from": "^4.3.1",
+      "to": "^4.3.1",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:brace-expansion@1": {
+      "from": "^1.1.18",
+      "to": "^1.1.18",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:path-to-regexp@6": {
+      "from": "^6.3.0",
+      "to": "^6.3.0",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:fast-uri": {
+      "from": null,
+      "to": "^3.1.7",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:qs": {
+      "from": null,
+      "to": "^6.16.0",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "override:browserslist": {
+      "from": null,
+      "to": "^4.28.8",
+      "decision": "SECURITY_FLOOR_UPSTREAM"
+    },
+    "@testing-library/user-event": {
+      "from": "^14.6.6",
+      "to": "^14.6.7",
+      "decision": "ALIGN_UPSTREAM_TESTED_LOCKSET"
+    }
+  },
+  "navigation_shell_copied": [
+    "components/shell/AlertsBell.tsx",
+    "components/shell/CommandPalette.tsx",
+    "components/shell/MobileSidebar.tsx",
+    "components/shell/NavHub.tsx",
+    "components/shell/OrganizationTransitionProvider.tsx",
+    "components/shell/SearchTrigger.tsx",
+    "components/shell/SeletorDeIdioma.tsx",
+    "components/shell/Sidebar.tsx",
+    "components/shell/TenantSwitcher.tsx",
+    "components/shell/TopBar.tsx",
+    "components/shell/UserMenu.tsx",
+    "components/shell/VersionFooter.tsx",
+    "lib/navigation/catalogo.ts",
+    "lib/navigation/interface.ts",
+    "lib/navigation/registry.ts"
+  ],
+  "nuvemshop_text_hits": [
+    "lib/navigation/catalogo.ts"
+  ],
+  "local_imports_unresolved": [
+    [
+      "tests/e2e/confirmar-dado-do-contato.spec.ts",
+      "./lib/env-de-teste"
+    ],
+    [
+      "tests/e2e/escalacao-ciclo.spec.ts",
+      "./lib/agent-engine/agent/inbound-turn"
+    ],
+    [
+      "tests/unit/telas-sem-dado-de-mentira.test.ts",
+      "./dados-de-mentira"
+    ]
+  ],
+  "branding_evidence_dir": "evidence/w6-branding",
+  "gates": {
+    "W6_TOOLCHAIN": "implementation-complete",
+    "W6_BRANDING": "conditional-pass",
+    "W6_NAVIGATION": "pass",
+    "W6_LOCKFILE": "static-pass_runtime-pending",
+    "RUNTIME": "blocked",
+    "PROD": "blocked"
+  },
+  "frozen_lockfile_static_check": {
+    "missing_direct_specifiers": [],
+    "mismatched_direct_specifiers": [],
+    "result": "pass"
+  },
+  "nuvemshop_sidebar_policy": {
+    "integration_present": true,
+    "sidebar_hidden": true,
+    "result": "pass"
+  }
+}

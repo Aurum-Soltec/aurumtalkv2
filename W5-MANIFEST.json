@@ -1,0 +1,206 @@
+{
+  "copied_from_upstream": [
+    "app/api/v1/ads/meta/_falha.ts",
+    "app/api/v1/ads/meta/accounts/route.ts",
+    "app/api/v1/ads/meta/campaigns/route.ts",
+    "app/api/v1/contacts/[id]/avatar/route.ts",
+    "app/api/v1/contacts/[id]/crm-summary/route.ts",
+    "app/api/v1/contacts/[id]/proposals/[proposal_id]/route.ts",
+    "app/api/v1/contacts/[id]/proposals/route.ts",
+    "app/api/v1/contacts/[id]/route.ts",
+    "app/api/v1/contacts/[id]/timeline/route.ts",
+    "app/api/v1/contacts/_handler.ts",
+    "app/api/v1/contacts/duplicates/route.ts",
+    "app/api/v1/contacts/import/route.ts",
+    "app/api/v1/contacts/merge/route.ts",
+    "app/api/v1/contacts/route.ts",
+    "app/api/v1/products/[id]/route.ts",
+    "app/api/v1/products/import/route.test.ts",
+    "app/api/v1/products/import/route.ts",
+    "app/api/v1/products/route.test.ts",
+    "app/api/v1/products/route.ts",
+    "app/api/v1/reports/activities/route.ts",
+    "app/api/v1/tasks/[id]/route.ts",
+    "app/api/v1/tasks/route.ts",
+    "app/app/activities/_components/ActivityReportClient.tsx",
+    "app/app/activities/page.tsx",
+    "app/app/ads/meta/_components/MetaAdsClient.tsx",
+    "app/app/ads/meta/_components/TabelaDeCampanhas.tsx",
+    "app/app/ads/meta/page.tsx",
+    "app/app/products/_client.tsx",
+    "app/app/products/page.tsx",
+    "app/app/settings/conversoes/_form.tsx",
+    "app/app/settings/conversoes/page.tsx",
+    "app/app/settings/meta-ads/_form.tsx",
+    "app/app/settings/meta-ads/page.tsx",
+    "app/app/tasks/_components/CalendarioDeTarefas.tsx",
+    "app/app/tasks/_components/FormularioDeTarefa.tsx",
+    "app/app/tasks/_components/ListaDeTarefas.tsx",
+    "app/app/tasks/_components/TarefasClient.tsx",
+    "app/app/tasks/page.tsx",
+    "components/contacts/AnonymizeDialog.tsx",
+    "components/contacts/ContactsTable.tsx",
+    "components/contacts/CustomFieldsEditor.tsx",
+    "components/contacts/EditContactDialog.tsx",
+    "components/contacts/ImportContactsDialog.tsx",
+    "components/contacts/MergeDialog.tsx",
+    "components/contacts/NewContactDialog.tsx",
+    "components/contacts/PropostasDeDado.tsx",
+    "components/contacts/TimelineView.tsx",
+    "lib/contacts/cpf.ts",
+    "lib/contacts/csv.test.ts",
+    "lib/contacts/csv.ts",
+    "lib/contacts/duplicados.ts",
+    "lib/contacts/proposta-de-dado.ts",
+    "lib/contacts/rotulo-do-contato.ts",
+    "lib/reports/atividades.ts",
+    "tests/invariants/meta-templates-rls.test.ts",
+    "tests/unit/meta-ads-erros-da-graph.test.ts",
+    "tests/unit/meta-ads-tabela-de-campanhas.test.ts",
+    "tests/unit/meta-build-components.test.ts",
+    "tests/unit/meta-contract-hash.test.ts",
+    "tests/unit/meta-render-template.test.ts",
+    "tests/unit/meta-send-template-outcome.test.ts",
+    "tests/unit/meta-send-template.test.ts",
+    "tests/unit/meta-template-binding.test.ts",
+    "tests/unit/meta-template-contract.test.ts",
+    "tests/unit/meta-template-sync.test.ts",
+    "tests/unit/meta-webhook-inbound.test.ts",
+    "tests/unit/meta-webhook.test.ts"
+  ],
+  "dependency_closure_added": [
+    "app/actions/settings/updateAdInsightsConnection.ts",
+    "app/actions/settings/updateAdPlatformConnection.ts",
+    "hooks/ads/useMetaAds.ts",
+    "hooks/contacts/useContactDuplicates.ts",
+    "hooks/contacts/useMergeContacts.ts",
+    "hooks/reports/useActivityReport.ts",
+    "hooks/tasks/useTasks.ts",
+    "lib/catalogo/moeda-da-org.ts",
+    "lib/catalogo/planilha.ts",
+    "lib/conversoes/estado-da-conexao.ts",
+    "lib/plataformas-de-anuncio/credenciais-de-leitura.ts",
+    "lib/plataformas-de-anuncio/meta/insights.ts",
+    "lib/plataformas-de-anuncio/meta/tabela-de-campanhas.ts",
+    "lib/plataformas-de-anuncio/types.ts",
+    "lib/schemas/produtos.ts",
+    "lib/tarefas/atividade.ts",
+    "lib/tarefas/tipos.ts"
+  ],
+  "navigation_routes_unblocked": [
+    "/app/activities",
+    "/app/ads/meta",
+    "/app/products",
+    "/app/settings/conversoes",
+    "/app/settings/meta-ads",
+    "/app/tasks"
+  ],
+  "reverse_drift_candidates": [
+    "app/api/v1/contacts/[id]/crm-summary/route.ts",
+    "app/api/v1/contacts/[id]/proposals/[proposal_id]/route.ts",
+    "app/api/v1/contacts/[id]/route.ts",
+    "app/api/v1/contacts/[id]/timeline/route.ts",
+    "app/api/v1/contacts/_handler.ts",
+    "app/api/v1/contacts/import/route.ts",
+    "app/api/v1/contacts/route.ts",
+    "components/contacts/ContactsTable.tsx",
+    "components/contacts/CustomFieldsEditor.tsx",
+    "components/contacts/TimelineView.tsx",
+    "tests/invariants/meta-templates-rls.test.ts"
+  ],
+  "local_imports_unresolved": [
+    [
+      "tests/e2e/confirmar-dado-do-contato.spec.ts",
+      "./lib/env-de-teste"
+    ],
+    [
+      "tests/e2e/escalacao-ciclo.spec.ts",
+      "./lib/agent-engine/agent/inbound-turn"
+    ],
+    [
+      "tests/unit/telas-sem-dado-de-mentira.test.ts",
+      "./dados-de-mentira"
+    ]
+  ],
+  "reverse_drift_classification": [
+    {
+      "path": "app/api/v1/contacts/[id]/crm-summary/route.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": [
+        "-    .select(\"organization_id\").eq(\"id\", contactId).maybeSingle();",
+        "-  const [leads, orders, activities, demandas, fatos, historico] = await Promise.all([",
+        "+  const [leads, orders, activities, demandas] = await Promise.all([",
+        "-      .eq(\"contact_id\", contactId).eq(\"organization_id\", contactScope.organization_id)",
+        "-      .eq(\"contact_id\", contactId).eq(\"organization_id\", contactScope.organization_id)",
+        "-      .eq(\"contact_id\", contactId).eq(\"organization_id\", contactScope.organization_id)",
+        "-      .eq(\"contact_id\", contactId).eq(\"organization_id\", contactScope.organization_id)",
+        "-    supabase.from(\"lead_notes\").select(\"id, headline, body\").eq(\"contact_id\", contactId).eq(\"organization_id\", contactScope.organization_id).order(\"created_at\", { ascending: false }).limit(20),",
+        "-    supabase.from(\"demandas\").select(\"id, desfecho, fechada_em\").eq(\"contact_id\", contactId).eq(\"organization_id\", contactScope.organization_id).not(\"fechada_em\", \"is\", null).order(\"fechada_em\", { ascending: false }).limit(5),",
+        "-  const falha = leads.error ?? orders.error ?? activities.error ?? demandas.error ?? fatos.error ?? historico.error;",
+        "+  const falha = leads.error ?? orders.error ?? activities.error ?? demandas.error;"
+      ]
+    },
+    {
+      "path": "app/api/v1/contacts/[id]/proposals/[proposal_id]/route.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "app/api/v1/contacts/[id]/route.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": [
+        "-    return fail(\"no_active_org\", t(\"No active organization.\"), 403, { requestId });",
+        "+    return fail(\"no_active_org\", \"No active organization.\", 403, { requestId });"
+      ]
+    },
+    {
+      "path": "app/api/v1/contacts/[id]/timeline/route.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "app/api/v1/contacts/_handler.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": [
+        "-  \"id, organization_id, name, display_name, email, email_normalized, phone_number, cpf_hash, birthdate, is_blocked, blocked_reason, is_anonymized, anonymized_at, is_merged_into, merged_at, consent, tags, source, source_metadata, custom_fields, created_at, updated_at, last_activity_at\";",
+        "+  \"id, organization_id, name, display_name, email, email_normalized, phone_number, cpf_hash, birthdate, is_blocked, blocked_reason, is_anonymized, anonymized_at, is_merged_into, merged_at, consent, tags, source, source_metadata, created_at, updated_at, last_activity_at\";",
+        "-      \"id, organization_id, is_anonymized, tags, email, phone_number, name, display_name, consent, custom_fields\",",
+        "-    .eq(\"organization_id\", ctx.organization_id)",
+        "+    .select(\"id, organization_id, is_anonymized, tags, email, phone_number, name, display_name, consent\")",
+        "-    ? await observeServiceOrigin(createAdminClient(), ctx.organization_id, contactId)",
+        "-    .eq(\"organization_id\", ctx.organization_id)"
+      ]
+    },
+    {
+      "path": "app/api/v1/contacts/import/route.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "app/api/v1/contacts/route.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "components/contacts/ContactsTable.tsx",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "components/contacts/CustomFieldsEditor.tsx",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "components/contacts/TimelineView.tsx",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    },
+    {
+      "path": "tests/invariants/meta-templates-rls.test.ts",
+      "decision": "UPSTREAM_WITH_REGRESSION_TEST",
+      "signals": []
+    }
+  ],
+  "manual_merge_evidence": []
+}

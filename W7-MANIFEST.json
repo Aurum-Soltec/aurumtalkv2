@@ -1,0 +1,34 @@
+{
+  "workflows_copied_from_upstream": [
+    ".github/workflows/acolhida.yml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/e2e.yml",
+    ".github/workflows/perf.yml",
+    ".github/workflows/publish-image.yml",
+    ".github/workflows/release.yml",
+    ".github/workflows/relogio.yml"
+  ],
+  "aurum_artifacts_preserved": {
+    "RUNBOOK-IMOBI.md": true,
+    "DEPLOYMENT-IMOBI.md": true,
+    "SECURITY-CHECKLIST-IMOBI.md": true,
+    "PRODUCTION-READINESS.md": true,
+    ".github/workflows/security.yml": true,
+    "scripts/production-preflight.mjs": true,
+    "scripts/db-migrate.mjs": true,
+    "PRODUCTION-READINESS-EVIDENCE.json": true
+  },
+  "package_scripts_added": {},
+  "missing_local_script_references": [],
+  "validation_script": "scripts/verify-upgrade-v1.17.mjs",
+  "validation_runbook": "UPGRADE-VALIDATION.md",
+  "gates": {
+    "W7_DELIVERY_CODE": "implementation-complete",
+    "W7_SCRIPT_REFERENCES": "pass",
+    "FROZEN_LOCKFILE": "static-pass_runtime-pending",
+    "TYPECHECK_LINT_TEST_BUILD": "runtime-pending",
+    "MIGRATION_FRESH_UPGRADE": "runtime-pending",
+    "BACKUP_RESTORE_ROLLBACK": "runtime-pending",
+    "PROD": "blocked"
+  }
+}
