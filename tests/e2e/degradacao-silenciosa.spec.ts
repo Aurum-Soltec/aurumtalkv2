@@ -125,7 +125,9 @@ test.describe("degradação silenciosa do tempo real", () => {
         try {
           const frame = JSON.parse(typeof m === "string" ? m : m.toString());
           evento = Array.isArray(frame) ? frame[3] : frame.event;
-        } catch { /* Controle não JSON continua trafegando. */ }
+        } catch {
+          /* Controle não JSON continua trafegando. */
+        }
         if (bloquearEntregas && evento === "postgres_changes") {
           engolidos++;
           return;
@@ -161,22 +163,25 @@ test.describe("degradação silenciosa do tempo real", () => {
     const marca = `CERCA${Date.now() % 100000}`;
     bloquearEntregas = true;
     try {
-    await admin.from("crm_leads").update({ title: `${lead.title} ${marca}` }).eq("id", lead.id);
-    await expect.poll(() => engolidos, { timeout: 10_000 }).toBeGreaterThan(0);
+      await admin
+        .from("crm_leads")
+        .update({ title: `${lead.title} ${marca}` })
+        .eq("id", lead.id);
+      await expect.poll(() => engolidos, { timeout: 10_000 }).toBeGreaterThan(0);
 
-    // PRÉ-CONDIÇÃO ANTES DA ASSERÇÃO: se nenhum quadro de dados foi engolido, a
-    // entrega não foi morta e o teste não mediu degradação nenhuma. Sem esta
-    // checagem, "a tela não avisou" seria verdade também num ambiente saudável —
-    // e a cerca passaria a documentar uma lacuna que não foi exercida.
-    expect(
-      engolidos,
-      `nenhum quadro de dados foi engolido (${quadrosTotais} quadros no total): a entrega ` +
-        `não chegou a ser morta, então esta execução não exercita a degradação`,
-    ).toBeGreaterThan(0);
+      // PRÉ-CONDIÇÃO ANTES DA ASSERÇÃO: se nenhum quadro de dados foi engolido, a
+      // entrega não foi morta e o teste não mediu degradação nenhuma. Sem esta
+      // checagem, "a tela não avisou" seria verdade também num ambiente saudável —
+      // e a cerca passaria a documentar uma lacuna que não foi exercida.
+      expect(
+        engolidos,
+        `nenhum quadro de dados foi engolido (${quadrosTotais} quadros no total): a entrega ` +
+          `não chegou a ser morta, então esta execução não exercita a degradação`,
+      ).toBeGreaterThan(0);
 
-    // O contrato do refetch de segurança é CURAR e AVISAR (intervalo de 45s),
-    // não manter a tela velha. Antes dele a marca não veio pelo socket.
-    await expect(page.locator("body")).not.toContainText(marca);
+      // O contrato do refetch de segurança é CURAR e AVISAR (intervalo de 45s),
+      // não manter a tela velha. Antes dele a marca não veio pelo socket.
+      await expect(page.locator("body")).not.toContainText(marca);
       await expect(page.locator("body")).toContainText(marca, { timeout: 55_000 });
       await expect(page.locator("body")).toContainText(AVISO);
     } finally {

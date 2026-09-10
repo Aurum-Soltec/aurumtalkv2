@@ -49,14 +49,11 @@ export function ImpersonateButton({
   async function handleConfirm() {
     setBusy(true);
     try {
-      const res = await fetch(
-        `/api/v1/admin/tenants/${organizationId}/impersonate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ access_mode: readonly ? "support_readonly" : "full" }),
-        },
-      );
+      const res = await fetch(`/api/v1/admin/tenants/${organizationId}/impersonate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_mode: readonly ? "support_readonly" : "full" }),
+      });
       const json: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {
         const rawMsg = (json as { error?: { message?: string } })?.error?.message;
@@ -65,8 +62,7 @@ export function ImpersonateButton({
         return;
       }
       const redirectUrl =
-        (json as { data?: { redirect_url?: string } })?.data?.redirect_url ??
-        "/app/inbox";
+        (json as { data?: { redirect_url?: string } })?.data?.redirect_url ?? "/app/inbox";
       setOpen(false);
       notifySupportTransition();
       // Hard navigation so the new cookie is sent on the next request and the
@@ -103,8 +99,9 @@ export function ImpersonateButton({
           <AlertDialogTitle>{t("Iniciar acompanhamento?")}</AlertDialogTitle>
           <AlertDialogDescription>
             {t("Você está prestes a entrar como o tenant")}{" "}
-            <span className="font-semibold text-foreground">{displayName}</span>.{" "}
-            {t("Toda ação será registrada como uma ação de suporte.")} {t("A sessão expira em 1 hora. Confirma?")}
+            <span className="text-foreground font-semibold">{displayName}</span>.{" "}
+            {t("Toda ação será registrada como uma ação de suporte.")}{" "}
+            {t("A sessão expira em 1 hora. Confirma?")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <label className="flex items-center gap-2 text-sm">

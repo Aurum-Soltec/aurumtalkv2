@@ -2,14 +2,22 @@ import { act, renderHook } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { useRealtimeChannel } from "@/hooks/realtime/useRealtimeChannel";
 
-const mock = vi.hoisted(() => ({ realtime: { setAuth: vi.fn(), accessTokenValue: "jwt-teste" }, channel: vi.fn(), removeChannel: vi.fn() }));
+const mock = vi.hoisted(() => ({
+  realtime: { setAuth: vi.fn(), accessTokenValue: "jwt-teste" },
+  channel: vi.fn(),
+  removeChannel: vi.fn(),
+}));
 vi.mock("@/lib/supabase/browser", () => ({
   createClient: () => mock,
 }));
 
 it("não assina até a callback canônica terminar de autenticar", async () => {
   let resolve!: () => void;
-  mock.realtime.setAuth.mockReturnValue(new Promise<void>((done) => { resolve = done; }));
+  mock.realtime.setAuth.mockReturnValue(
+    new Promise<void>((done) => {
+      resolve = done;
+    }),
+  );
   const channel = { subscribe: vi.fn(), on: vi.fn() };
   channel.on.mockReturnValue(channel);
   mock.channel.mockReturnValue(channel);

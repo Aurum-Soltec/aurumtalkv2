@@ -9,21 +9,19 @@ const autenticacoes = new WeakMap<object, Promise<void>>();
 async function autenticar(supabase: ReturnType<typeof createClient>): Promise<void> {
   let pending = autenticacoes.get(supabase);
   if (!pending) {
-    const created: Promise<void> = supabase.realtime.setAuth().then(() => {
-      if (!supabase.realtime.accessTokenValue) throw new Error("realtime_auth_unavailable");
-    }).finally(() => autenticacoes.delete(supabase));
+    const created: Promise<void> = supabase.realtime
+      .setAuth()
+      .then(() => {
+        if (!supabase.realtime.accessTokenValue) throw new Error("realtime_auth_unavailable");
+      })
+      .finally(() => autenticacoes.delete(supabase));
     autenticacoes.set(supabase, created);
     pending = created;
   }
   return pending;
 }
 
-export type RealtimeStatus =
-  | "connecting"
-  | "subscribed"
-  | "channel_error"
-  | "timed_out"
-  | "closed";
+export type RealtimeStatus = "connecting" | "subscribed" | "channel_error" | "timed_out" | "closed";
 
 export interface UseRealtimeChannelOpts {
   name: string;
@@ -238,7 +236,16 @@ export function useRealtimeChannel(opts: UseRealtimeChannelOpts): {
     };
     // intentionally omit onChange (ref); only re-subscribe when channel topology changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, enabled, instanceId, postgresChanges?.event, postgresChanges?.table, postgresChanges?.filter, postgresChanges?.schema, broadcast?.event]);
+  }, [
+    name,
+    enabled,
+    instanceId,
+    postgresChanges?.event,
+    postgresChanges?.table,
+    postgresChanges?.filter,
+    postgresChanges?.schema,
+    broadcast?.event,
+  ]);
 
   return { status, ultimaEntrega };
 }
