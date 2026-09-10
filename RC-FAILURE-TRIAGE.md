@@ -47,8 +47,9 @@ suporte; por isso a tabela lista 12 arquivos para 19 falhas.
 
 - 313 avisos de lint, 0 erros: dívida técnica pré-existente, sem aplicar
   autofix amplo numa RC de fechamento.
-- Banco/RLS e E2E: `BLOCKED_EXTERNAL_INFRA`, nunca PASS, até Docker/Supabase
-  estarem disponíveis.
+- Banco/RLS e E2E: não são mais `BLOCKED_EXTERNAL_INFRA`. O Docker executou o
+  baseline e os invariantes; o banco terminou com 14 falhas em 8 arquivos, e o
+  último E2E remoto terminou com 21 casos falhos.
 
 ## Falhas observadas após o push
 
@@ -59,3 +60,7 @@ suporte; por isso a tabela lista 12 arquivos para 19 falhas.
 - `release`: `ENVIRONMENT` — `RELEASE_APP_ID`/`RELEASE_APP_PRIVATE_KEY` não
   estão disponíveis no contexto remoto. Nenhum segredo foi criado ou inferido;
   retry e corte de tag ficam pendentes dessa configuração do mantenedor.
+- `verify`/`invariants`/`e2e`: o commit `238ff48` foi publicado com o harness de
+  autenticação do banco, a fronteira do lint de canais e o caminho de fixture
+  E2E corrigidos; os jobs desse commit ainda estavam em andamento no momento
+  deste registro.

@@ -2,10 +2,10 @@
 
 ## Resultado atual
 
-**RC_CODE_VALIDATED_INFRA_PENDING**
+**RC_VALIDATION_BLOCKED**
 
-O código e os gates locais não bloqueiam a RC. A validação de banco/RLS e E2E
-continua pendente porque o daemon Docker não está disponível neste ambiente.
+Os gates unitários, typecheck, lint e build passam, mas a validação de
+banco/RLS e E2E encontrou falhas reais. A RC continua bloqueada.
 
 ## Gates executados
 
@@ -17,9 +17,9 @@ continua pendente porque o daemon Docker não está disponível neste ambiente.
 | `pnpm lint` | PASS | 0 erros; 313 avisos preexistentes |
 | `pnpm test:unit` | PASS | 652 arquivos; 7.088 pass; 1 expected fail |
 | `pnpm build` | PASS | Next 16.3.4; 53 páginas/rotas geradas |
-| `pnpm test:db` | BLOCKED_EXTERNAL_INFRA | Docker daemon ausente |
-| `pnpm test:e2e` | BLOCKED_EXTERNAL_INFRA | depende de banco/Supabase local |
-| Actions remota | PENDING | action comum corrigida; retry ainda depende da Actions e do segredo de release |
+| `pnpm test:db` | FAIL_VALIDATION | baseline INSTALL/UPDATE passou; 8 arquivos de invariantes falharam, com 14 asserções falhas |
+| `pnpm test:e2e` | FAIL_REMOTE | último run concluído: 21 casos falhos nas três partes |
+| Actions remota | IN_PROGRESS | commit `238ff48`; release segue bloqueada por segredo externo |
 
 ## Não executado por escopo ou infraestrutura
 
@@ -32,6 +32,6 @@ continua pendente porque o daemon Docker não está disponível neste ambiente.
 
 ## Condição de GO
 
-Executar banco/invariantes e E2E em ambiente Docker/Supabase funcional, obter os
-checks obrigatórios verdes no commit final e registrar a evidência antes de
-promover qualquer versão ou canal `stable`.
+Corrigir as falhas de banco/invariantes e E2E, obter os checks obrigatórios
+verdes no commit final e registrar a evidência antes de promover qualquer
+versão ou canal `stable`.

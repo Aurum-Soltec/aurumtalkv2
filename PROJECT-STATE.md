@@ -6,12 +6,12 @@ Branch: `main`
 
 Commit inicial desta RC Closure: `d8ee83562f09bc57206c0e1e41d5e3090fdd2870`
 
-Status: **RC_CODE_VALIDATED_INFRA_PENDING**
+Status: **RC_VALIDATION_BLOCKED**
 
 ## Estado comprovado
 
 - O checkout local parte da `main` limpa e alinhada com a `main` remota em
-  `d8ee83562f09bc57206c0e1e41d5e3090fdd2870`.
+  `238ff481e0c1ec324de8a46dbdcaef8835a94c94`.
 - O contrato documental ativo aponta para
   `https://github.com/Aurum-Soltec/aurumtalkv2`, Tailwind 4 e as três imagens
   `imobi-crm`, `imobi-worker` e `imobi-scheduler`.
@@ -20,13 +20,18 @@ Status: **RC_CODE_VALIDATED_INFRA_PENDING**
 - `typecheck`, `lint`, `verify:upgrade-v1.17` e `build` passaram.
 - O lint permanece com 313 avisos e 0 erros; são dívida técnica pré-existente,
   sem correção ampla nesta RC.
-- `pnpm test:db` e E2E não puderam ser executados: o daemon Docker não está
-  disponível neste host (`docker_engine` ausente). Isso não é PASS.
+- O daemon Docker está disponível. O baseline instala e atualiza sem erro, mas
+  o gate de invariantes encontrou falhas reais de LGPD, RLS, grants, agenda,
+  ciclo de demanda e webhook; isso não é PASS.
+- O último run E2E concluído (`3ef20c1`) executou as três partes e terminou com
+  21 casos falhos. O run do commit atual ainda está em andamento.
 - A consulta remota encontrou dois PRs abertos do Dependabot (#1 e #2); não
   foram mesclados nem alterados.
-- O primeiro run do novo commit encontrou a action local `preparar-node` ausente;
-  ela foi restaurada no follow-up de CI. O workflow `release` também exige o
-  segredo externo `RELEASE_APP_ID`, que não está configurado neste repositório.
+- O primeiro run encontrou a action local `preparar-node` ausente; ela foi
+  restaurada no follow-up de CI. O commit atual também corrigiu o lint Linux,
+  os stubs de autenticação do harness de banco e um caminho quebrado de fixture
+  E2E. O workflow `release` continua exigindo o segredo externo
+  `RELEASE_APP_ID`, que não está configurado neste repositório.
 
 ## Decisões desta RC Closure
 
@@ -43,6 +48,6 @@ Status: **RC_CODE_VALIDATED_INFRA_PENDING**
 
 ## Gatilho para liberar a RC
 
-Disponibilizar Docker/Supabase local ou runner equivalente, executar
-`pnpm test:db` e `pnpm test:e2e`, confirmar os checks da Actions no novo commit,
-e só então reavaliar `RC_VALIDATED`.
+Corrigir as falhas de invariantes e E2E, confirmar os checks da Actions no
+commit atual e só então reavaliar `RC_VALIDATED`. A publicação da release ainda
+depende de o mantenedor configurar os segredos externos.

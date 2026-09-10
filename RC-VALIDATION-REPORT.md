@@ -7,10 +7,10 @@ Commit final: o commit que contém este relatório, com a mensagem
 
 ## Classificação
 
-**RC_CODE_VALIDATED_INFRA_PENDING**
+**RC_VALIDATION_BLOCKED**
 
-O código foi validado localmente. A promoção para `RC_VALIDATED` está bloqueada
-até banco/invariantes/RLS e E2E rodarem em infraestrutura Docker/Supabase.
+Os gates de código passam, mas a promoção para `RC_VALIDATED` está bloqueada
+pelas falhas comprovadas de invariantes/RLS e E2E.
 
 ## Gates locais
 
@@ -22,8 +22,8 @@ até banco/invariantes/RLS e E2E rodarem em infraestrutura Docker/Supabase.
 | `pnpm lint` | PASS — 0 erros, 313 avisos |
 | `pnpm test:unit` | PASS — 652 arquivos; 7.088 pass; 1 expected fail |
 | `pnpm build` | PASS — 53 páginas/rotas |
-| `pnpm test:db` | BLOCKED_EXTERNAL_INFRA — daemon Docker ausente |
-| `pnpm test:e2e` | BLOCKED_EXTERNAL_INFRA — banco local indisponível |
+| `pnpm test:db` | FAIL_VALIDATION — baseline INSTALL/UPDATE passou; 8 arquivos falharam, 14 asserções |
+| `pnpm test:e2e` | FAIL_REMOTE — último run concluído teve 21 casos falhos |
 
 ## Trabalho entregue
 
@@ -52,5 +52,5 @@ até banco/invariantes/RLS e E2E rodarem em infraestrutura Docker/Supabase.
 
 ## Próxima ação
 
-Disponibilizar Docker/Supabase, rodar `pnpm test:db` e `pnpm test:e2e`, acompanhar
-os checks obrigatórios da Actions no commit final e só então decidir tag/release.
+Corrigir as falhas de governança e jornada, acompanhar os checks obrigatórios da
+Actions no commit atual e só então decidir tag/release.
