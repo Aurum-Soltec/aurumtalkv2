@@ -127,10 +127,9 @@ test("F1 — trocar o modelo GRAVA, e a tela passa a mostrar o novo", async ({ p
   await page.click('[data-testid="provider-stage_classifier"]');
   await page.getByRole("option", { name: /OpenRouter/ }).click();
   await page.click('[data-testid="modelo-stage_classifier"]');
-  // O catálogo passa de 50 itens; typeahead é a interação acessível do Select
-  // para alcançar uma opção fora da viewport sem depender da altura do CI.
-  await page.keyboard.type("Llama 3.3 70B Instruct");
-  await page.keyboard.press("Enter");
+  const llama = page.getByRole("option", { name: /Llama 3\.3 70B Instruct/ });
+  await llama.scrollIntoViewIfNeeded();
+  await llama.click();
   await expect(page.locator('[data-testid="modelo-stage_classifier"]')).toContainText(
     /Llama 3\.3 70B Instruct/,
   );

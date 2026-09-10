@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { JanelaSelo } from "@/components/inbox/JanelaSelo";
-import { Phone, ArrowRight } from "@/lib/ui/icons";
+import { Phone, ArrowRight, CalendarPlus } from "@/lib/ui/icons";
 import { useAuth } from "@/hooks/auth/AuthProvider";
 import { useClaimConversation } from "@/hooks/inbox/useClaimConversation";
 import { useReleaseConversation } from "@/hooks/inbox/useReleaseConversation";
@@ -196,6 +196,17 @@ export function ConversationHeader({ conversation }: Props) {
           barra pode encolher e quebrar internamente, e os botões continuam
           todos visíveis e clicáveis — só que em duas linhas quando preciso. */}
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        {c?.id && (
+          <Button asChild size="sm" variant="outline">
+            <Link
+              href={`/app/agenda?contact=${encodeURIComponent(c.id)}&conversation=${encodeURIComponent(conversation.id)}&new=1`}
+              className="flex items-center gap-1"
+            >
+              <CalendarPlus size={14} aria-hidden />
+              {t("Marcar compromisso")}
+            </Link>
+          </Button>
+        )}
         {isOpen && (
           <Button
             size="sm"

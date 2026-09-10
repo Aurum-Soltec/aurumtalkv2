@@ -1072,20 +1072,20 @@ test("Radar recorta demandas pela RLS real, além do pool frio, e preserva gest�
   await page.goto(`/admin/tenants/${f.org}`);
   await page.getByRole("button", { name: /Acompanhar/ }).click();
   await page.getByRole("button", { name: "Confirmar e entrar" }).click();
-  await page.waitForURL("**/app/inbox");
+  await page.waitForURL(/\/app(?:\/|$)/);
   await page.goto("/app/radar");
   await expect(page.getByTestId("radar-sem-proximo-passo")).toContainText("Órfã de gestão");
   expect((await read()).total_sem_proximo_passo).toBe(6);
   await page.getByRole("button", { name: "Sair do acompanhamento" }).click();
-  await page.waitForURL("**/app/inbox");
+  await page.waitForURL(/\/app(?:\/|$)/);
   await page.goto(`/admin/tenants/${f.org}`);
   await page.getByRole("button", { name: /Acompanhar/ }).click();
   await page.getByLabel("Somente leitura", { exact: true }).check();
   await page.getByRole("button", { name: "Confirmar e entrar" }).click();
-  await page.waitForURL("**/app/inbox");
+  await page.waitForURL(/\/app(?:\/|$)/);
   expect((await page.request.get("/api/v1/leads/at-risk")).status()).toBe(403);
   await page.getByRole("button", { name: "Sair do acompanhamento" }).click();
-  await page.waitForURL("**/app/inbox");
+  await page.waitForURL(/\/app(?:\/|$)/);
 });
 
 test("duas sessões: remarcação não reautoriza cancelamento em rascunho", async ({

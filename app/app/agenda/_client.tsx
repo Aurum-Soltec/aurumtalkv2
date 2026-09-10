@@ -65,6 +65,9 @@ const VISOES: Array<{ id: VisaoDaAgenda; rotulo: string }> = [
  * imports sem querer.
  */
 export function AgendaClient({
+  contatoInicial,
+  conversaInicial,
+  abrirMarcacaoInicial,
   fusoDeApresentacao,
   googleConfigurado,
   contaConectada,
@@ -74,6 +77,9 @@ export function AgendaClient({
   tiposIniciais,
   agendamentosIniciais,
 }: {
+  contatoInicial?: string;
+  conversaInicial?: string;
+  abrirMarcacaoInicial?: boolean;
   fusoDeApresentacao: string | null;
   googleConfigurado: boolean;
   contaConectada?: string | null;
@@ -95,9 +101,9 @@ export function AgendaClient({
 }) {
   const localeDaData = useLocaleDeData();
   const t = useT();
-  const [marcando, setMarcando] = React.useState(false);
-  const [contactId,setContactId]=React.useState("");
-  const [conversationId,setConversationId]=React.useState("");
+  const [marcando, setMarcando] = React.useState(abrirMarcacaoInicial ?? false);
+  const [contactId,setContactId]=React.useState(contatoInicial ?? "");
+  const [conversationId,setConversationId]=React.useState(conversaInicial ?? "");
   const onContext=React.useCallback((contact:string,conversation:string)=>{setContactId(contact);setConversationId(conversation);setMarcando(true);},[]);
   // O horário que veio de um CLIQUE NA GRADE. Preenchido, o painel abre já em
   // "confirmando" naquele instante; vazio, ele abre pedindo o dia, como sempre.

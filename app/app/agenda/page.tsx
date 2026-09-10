@@ -39,7 +39,15 @@ function nomeDoContato(
   return alvo?.name ?? alvo?.display_name ?? undefined;
 }
 
-export default async function AgendaPage() {
+export default async function AgendaPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const contactId = typeof params.contact === "string" ? params.contact : "";
+  const conversationId = typeof params.conversation === "string" ? params.conversation : "";
+  const abrirMarcacao = params.new === "1" && contactId.length > 0;
   const user = await requireAuth();
   const activeOrg = await resolveActiveOrg(user);
   if (!activeOrg) redirect("/app");
@@ -196,6 +204,9 @@ export default async function AgendaPage() {
 
   return (
     <AgendaClient
+      contatoInicial={contactId}
+      conversaInicial={conversationId}
+      abrirMarcacaoInicial={abrirMarcacao}
       fusoDeApresentacao={fusoDeApresentacao}
       googleConfigurado={googleConfigurado}
       contaConectada={conexoes?.map(c => c.account_email).join(", ") || null}

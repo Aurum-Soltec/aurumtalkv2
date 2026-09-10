@@ -97,7 +97,8 @@ const AVISO =
 function ehEntrega(bruto: string): boolean {
   try {
     const q: unknown = JSON.parse(bruto);
-    return Array.isArray(q) && q[3] === "postgres_changes";
+    if (Array.isArray(q)) return q[3] === "postgres_changes";
+    return !!q && typeof q === "object" && (q as { event?: string }).event === "postgres_changes";
   } catch {
     return false;
   }

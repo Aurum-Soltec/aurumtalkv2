@@ -7,6 +7,7 @@ import { createSupabaseAdminClient, type FollowupJobRequest } from "@/lib/follow
 import type { EnrollmentRow } from "@/lib/followup/node-handlers";
 import { completeTurnForEnrollment, type TurnBridgeAdminClient } from "@/lib/followup/turn-bridge";
 import { logger } from "@/lib/logger";
+import { assertAgendaEffectSupabase } from "@/lib/agenda/efeito";
 
 function ponteSupabase(admin: SupabaseClient): TurnBridgeAdminClient {
   const base = createSupabaseAdminClient(admin);
@@ -84,6 +85,15 @@ export async function enviarTextoFixoPendente(
         contactId,
         sessionId,
       );
+      // O estado pode mudar entre o tick e a entrega. Confere de novo no
+      // último ponto reversível para uma remarcação/resposta nunca receber uma
+      // cobrança preparada antes dela.
+      await assertAgendaEffectSupabase(admin, {
+        organizationId: job.organization_id as string,
+        contactId,
+        enrollmentId,
+        nodeId,
+      });
       await sendMessageHandler(
         admin,
         {

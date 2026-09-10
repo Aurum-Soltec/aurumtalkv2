@@ -89,14 +89,16 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
         const payload = event.payload.toString();
         try {
           const parsed = JSON.parse(payload) as unknown;
-          if (!Array.isArray(parsed)) return;
-          const topic = String(parsed[2] ?? "");
-          const kind = String(parsed[3] ?? "");
-          const body = parsed[4] as { status?: string; data?: { table?: string } } | undefined;
+          const message = Array.isArray(parsed)
+            ? { topic: parsed[2], event: parsed[3], payload: parsed[4] }
+            : (parsed as { topic?: unknown; event?: unknown; payload?: unknown });
+          const topic = String(message.topic ?? "");
+          const kind = String(message.event ?? "");
+          const body = message.payload as { status?: string } | undefined;
           if (topic.startsWith("realtime:interface:") && kind === "phx_reply" && body?.status === "ok") {
             interfaceSubscribed = true;
           }
-          if (kind === "postgres_changes" && body?.data?.table === "user_organizations") {
+          if (topic.startsWith("realtime:interface:") && kind === "postgres_changes") {
             realtime.push(payload);
           }
         } catch {
