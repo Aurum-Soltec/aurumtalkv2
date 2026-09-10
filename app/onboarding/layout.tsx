@@ -13,6 +13,9 @@ import { IdiomaProvider } from "@/lib/i18n/IdiomaProvider";
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const user = await requireAuth();
   const activeOrg = await resolveActiveOrg(user);
+  // Suporte acompanha a operação; não instala a organização em nome do cliente.
+  // resolveActiveOrg acima mantém o bloqueio de suporte expirado/revogado.
+  if (user.support) redirect("/app");
   if (!activeOrg) redirect("/get-started");
 
   const { state, onboardedAt } = await loadOnboardingState(activeOrg.orgId);
