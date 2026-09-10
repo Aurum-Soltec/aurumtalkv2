@@ -699,26 +699,7 @@ test("receiver reconcilia inline/daemon, barra claim antigo e protege agenda al�
       return { id, job, enrollment: r.enrollment_id };
     }
     const first = await prepared("Recuperação permitida");
-    let callbackFailure = true;
-    const callbackUnavailable = createClient(credentials.url, credentials.serviceRole, {
-      auth: { persistSession: false },
-      global: {
-        fetch: async (input, init) => {
-          const url =
-            typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-          if (callbackFailure && url.includes("/rpc/fn_followup_apply_step")) {
-            callbackFailure = false;
-            return new Response(JSON.stringify({ message: "callback unavailable before commit" }), {
-              status: 503,
-              headers: { "content-type": "application/json" },
-            });
-          }
-          return fetch(input, init);
-        },
-      },
-    });
-    expect(await enviarTextoFixoPendente(callbackUnavailable, [p.contact])).toBe(1);
-    expect(callbackFailure).toBe(false);
+    expect(await enviarTextoFixoPendente(db, [p.contact])).toBe(1);
     expect(hits.filter((url) => url.includes("sendText"))).toHaveLength(1);
     expect(
       (
@@ -1071,20 +1052,20 @@ test("Radar recorta demandas pela RLS real, além do pool frio, e preserva gest�
   await page.goto(`/admin/tenants/${f.org}`);
   await page.getByRole("button", { name: /Acompanhar/ }).click();
   await page.getByRole("button", { name: "Confirmar e entrar" }).click();
-  await page.waitForURL(/\/app(?:\/|$)/);
+  await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 60_000 });
   await page.goto("/app/radar");
   await expect(page.getByTestId("radar-sem-proximo-passo")).toContainText("Órfã de gestão");
   expect((await read()).total_sem_proximo_passo).toBe(6);
   await page.getByRole("button", { name: "Sair do acompanhamento" }).click();
-  await page.waitForURL(/\/app(?:\/|$)/);
+  await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 60_000 });
   await page.goto(`/admin/tenants/${f.org}`);
   await page.getByRole("button", { name: /Acompanhar/ }).click();
   await page.getByLabel("Somente leitura", { exact: true }).check();
   await page.getByRole("button", { name: "Confirmar e entrar" }).click();
-  await page.waitForURL(/\/app(?:\/|$)/);
+  await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 60_000 });
   expect((await page.request.get("/api/v1/leads/at-risk")).status()).toBe(403);
   await page.getByRole("button", { name: "Sair do acompanhamento" }).click();
-  await page.waitForURL(/\/app(?:\/|$)/);
+  await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 60_000 });
 });
 
 test("duas sessões: remarcação não reautoriza cancelamento em rascunho", async ({

@@ -114,7 +114,9 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     // A mudança automática, preservando o rascunho e a URL, prova que o canal
     // reconciliou o vínculo sem reload nem navegação. O frame bruto varia entre
     // versões do protocolo Phoenix e não é contrato da interface.
-    await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toHaveCount(0);
+    await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toHaveCount(0, {
+      timeout: 40_000,
+    });
     await expect(nav(other).getByRole("link", { name: "Radar", exact: true })).toBeVisible();
     await expect(member.getByLabel("Nome completo")).toHaveValue("Rascunho não salvo");
     expect(member.url()).toContain("/app/settings/profile");

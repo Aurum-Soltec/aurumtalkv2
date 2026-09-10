@@ -156,7 +156,9 @@ test.describe("degradação silenciosa do tempo real", () => {
     const marca = `CERCA${Date.now() % 100000}`;
     bloquearEntregas = true;
     await admin.from("crm_leads").update({ title: `${lead.title} ${marca}` }).eq("id", lead.id);
-    await page.waitForTimeout(12_000);
+    // O heartbeat natural do Phoenix ocorre a cada ~30s. Esperar atravessá-lo
+    // garante que o proxy engoliu uma resposta real mantendo o socket aberto.
+    await page.waitForTimeout(35_000);
     const texto = ((await page.locator("body").innerText()) ?? "").replace(/\s+/g, " ");
     await admin.from("crm_leads").update({ title: lead.title }).eq("id", lead.id);
 

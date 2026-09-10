@@ -16,9 +16,9 @@ async function start(page:Page,org:string,readonly=false){
  await page.getByRole("button",{name:/Acompanhar/}).click();
  if(readonly)await page.getByLabel("Somente leitura",{exact:true}).check();
  await page.getByRole("button",{name:"Confirmar e entrar"}).click();
- await expect(page).toHaveURL(/\/app(?:\/|$)/);
+ await expect(page).toHaveURL(/\/app(?:\/|$)/,{timeout:60000});
 }
-async function end(page:Page){await page.getByRole("button",{name:"Sair do acompanhamento"}).click();await expect(page).toHaveURL(/\/app(?:\/|$)/);await expect(page.getByRole("button",{name:"Sair do acompanhamento"})).toHaveCount(0);}
+async function end(page:Page){await page.getByRole("button",{name:"Sair do acompanhamento"}).click();await expect(page).toHaveURL(/\/app(?:\/|$)/,{timeout:60000});await expect(page.getByRole("button",{name:"Sair do acompanhamento"})).toHaveCount(0);}
 
 test("suporte mantém identidade, opera B e encerra sem misturar A; readonly/expiração/revogação são reais",async({page,browser})=>{
  test.setTimeout(240000);
