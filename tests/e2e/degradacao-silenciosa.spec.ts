@@ -94,16 +94,6 @@ const AVISO =
  *  O `phx_reply` que confirma a assinatura carrega as mesmas palavras no corpo —
  *  só a POSIÇÃO separa recibo de entrega. Casar por substring conta recibo como
  *  entrega; exigir uma chave `"event":` não casa nada. Já errei os dois. */
-function ehEntrega(bruto: string): boolean {
-  try {
-    const q: unknown = JSON.parse(bruto);
-    if (Array.isArray(q)) return q[3] === "postgres_changes";
-    return !!q && typeof q === "object" && (q as { event?: string }).event === "postgres_changes";
-  } catch {
-    return false;
-  }
-}
-
 test.describe("degradação silenciosa do tempo real", () => {
   test("com a entrega morta, a tela avisa que pode estar desatualizada", async ({ page }) => {
     // O padrão de 30s da suíte não cabe: só a janela de observação depois da
@@ -122,6 +112,7 @@ test.describe("degradação silenciosa do tempo real", () => {
 
     let engolidos = 0;
     let quadrosTotais = 0;
+    let bloquearEntregas = false;
     // O PROXY MATA A ENTREGA SEM DERRUBAR O CANAL: engole só os quadros de dados
     // e deixa passar join, phx_reply e heartbeat. Fechar o socket seria outro
     // defeito — visível — e mediria uma tela que não é a que interessa.
@@ -130,7 +121,7 @@ test.describe("degradação silenciosa do tempo real", () => {
       route.onMessage((m) => servidor.send(m));
       servidor.onMessage((m) => {
         quadrosTotais++;
-        if (ehEntrega(String(m))) {
+        if (bloquearEntregas) {
           engolidos++;
           return;
         }
@@ -163,6 +154,7 @@ test.describe("degradação silenciosa do tempo real", () => {
     const lead = (leads ?? [])[0] as { id: string; title: string };
 
     const marca = `CERCA${Date.now() % 100000}`;
+    bloquearEntregas = true;
     await admin.from("crm_leads").update({ title: `${lead.title} ${marca}` }).eq("id", lead.id);
     await page.waitForTimeout(12_000);
     const texto = ((await page.locator("body").innerText()) ?? "").replace(/\s+/g, " ");

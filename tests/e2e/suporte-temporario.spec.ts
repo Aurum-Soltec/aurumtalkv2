@@ -10,15 +10,15 @@ const password=`Local-${randomUUID()}!`;
 async function insert(table:string,value:Record<string,unknown>) {
  const {data,error}=await db.from(table).insert(value).select("id").single(); if(error)throw error; return data.id as string;
 }
-async function login(page:Page,email:string){await page.goto("/login");await page.getByLabel(/e-?mail/i).fill(email);await page.getByLabel(/senha/i).fill(password);await page.getByRole("button",{name:/entrar/i}).click();await page.waitForURL(/\/app(\/|$)/,{timeout:60000});}
+async function login(page:Page,email:string){await page.goto("/login");await page.getByLabel(/e-?mail/i).fill(email);await page.getByLabel(/senha/i).fill(password);await page.getByRole("button",{name:/entrar/i}).click();await expect(page).toHaveURL(/\/app(?:\/|$)/,{timeout:60000});}
 async function start(page:Page,org:string,readonly=false){
  await page.goto(`/admin/tenants/${org}`);
  await page.getByRole("button",{name:/Acompanhar/}).click();
  if(readonly)await page.getByLabel("Somente leitura",{exact:true}).check();
  await page.getByRole("button",{name:"Confirmar e entrar"}).click();
- await page.waitForURL(/\/app(?:\/|$)/);
+ await expect(page).toHaveURL(/\/app(?:\/|$)/);
 }
-async function end(page:Page){await page.getByRole("button",{name:"Sair do acompanhamento"}).click();await page.waitForURL(/\/app(?:\/|$)/);await expect(page.getByRole("button",{name:"Sair do acompanhamento"})).toHaveCount(0);}
+async function end(page:Page){await page.getByRole("button",{name:"Sair do acompanhamento"}).click();await expect(page).toHaveURL(/\/app(?:\/|$)/);await expect(page.getByRole("button",{name:"Sair do acompanhamento"})).toHaveCount(0);}
 
 test("suporte mantém identidade, opera B e encerra sem misturar A; readonly/expiração/revogação são reais",async({page,browser})=>{
  test.setTimeout(240000);
@@ -120,7 +120,7 @@ test("suporte mantém identidade, opera B e encerra sem misturar A; readonly/exp
   await expect(sameTab.getByTestId("tenant-switcher")).toContainText(`Suporte B ${suffix}`);
   await expect(sameTab.locator("[data-conversation-id]").getByText(`Contato B ${suffix}`,{exact:true})).toBeVisible();
   await expect(sameTab.locator("[data-conversation-id]").getByText(`Contato A ${suffix}`,{exact:true})).toHaveCount(0);
-  await page.goto("/onboarding");await page.waitForURL(/\/app(?:\/|$)/);
+  await page.goto("/onboarding");await expect(page).toHaveURL(/\/app(?:\/|$)/);
   await expect(page.getByRole("alert").filter({hasText:/edição permitida/i})).toContainText(`Suporte B ${suffix}`);
   await expect(page.locator("[data-conversation-id]").getByText(`Contato B ${suffix}`,{exact:true})).toBeVisible();
   await expect(page.locator("[data-conversation-id]").getByText(`Contato A ${suffix}`,{exact:true})).toHaveCount(0);
@@ -183,7 +183,7 @@ test("suporte mantém identidade, opera B e encerra sem misturar A; readonly/exp
   page.on("response",response=>{if(response.status()===403)unexpectedDenials.push(response.url());});
   await start(page,orgs[1]!,true);
   await expect(sameTab.getByTestId("tenant-switcher")).toContainText(`Suporte B ${suffix}`);
-  await page.goto("/onboarding");await page.waitForURL(/\/app(?:\/|$)/);
+  await page.goto("/onboarding");await expect(page).toHaveURL(/\/app(?:\/|$)/);
   const writes:string[]=[];page.on("request",request=>{if(request.method()!=="GET"&&/mark-read|availability|messages/.test(request.url()))writes.push(request.url());});
   await page.locator(`[data-conversation-id="${convs[1]}"]`).click();
   await expect(page.getByRole("alert").filter({hasText:/somente leitura/i})).toBeVisible();

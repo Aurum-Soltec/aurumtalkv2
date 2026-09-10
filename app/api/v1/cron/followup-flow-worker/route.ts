@@ -73,6 +73,21 @@ async function handle(req: NextRequest): Promise<Response> {
     return fail("internal_error", detail, 500, { requestId });
   }
 
+  const confirmationSweep = await admin.rpc("fn_appointment_confirmation_sweep", {
+    p_limit: 500,
+    p_now: new Date().toISOString(),
+  });
+  if (confirmationSweep.error) {
+    logger.error("[followup-flow-worker.cron] confirmation sweep failed", {
+      error: confirmationSweep.error.message,
+      requestId,
+    });
+    return fail("internal_error", "Falha ao verificar confirmações de compromissos.", 500, {
+      requestId,
+    });
+  }
+  const confirmationsRequired = confirmationSweep.data ?? 0;
+
   // Só audita tick que MEXEU em alguma coisa. Auditar toda batida enchia o
   // api_audit_log — que é append-only e tem retenção de 5 anos — de linhas
   // vazias: numa instalação parada, medido nesta VPS, 95% das entradas eram
@@ -108,6 +123,16 @@ async function handle(req: NextRequest): Promise<Response> {
     });
   }
 
+  if (confirmationsRequired) {
+    void audit({
+      action: "agenda.confirmation_sweep_run",
+      organizationId: null,
+      bypassedRls: true,
+      metadata: { confirmations_required: confirmationsRequired },
+      requestId,
+    });
+  }
+
   try {
     const sweepSummary = await runSilenceSweep({
       db: createSupabaseSilenceSweepDb(admin),
@@ -130,7 +155,7 @@ async function handle(req: NextRequest): Promise<Response> {
     logger.error("[followup-flow-worker.cron] runSilenceSweep threw", { error: detail, requestId });
   }
 
-  return ok(summary, { requestId });
+  return ok({ ...summary, confirmations_required: confirmationsRequired }, { requestId });
 }
 
 export async function GET(req: NextRequest): Promise<Response> {

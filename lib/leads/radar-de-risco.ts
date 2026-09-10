@@ -17,6 +17,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  DEFAULT_VISIBILITY_MODE,
+  type Role,
+  type VisibilityMode,
+} from "@/lib/auth/types";
+
+import {
   classifyRisk,
   compareRisk,
   resolveStageWindow,
@@ -85,6 +91,8 @@ export interface RadarDeRisco {
 
 export interface OpcoesDoRadar {
   organizationId: string;
+  actorUserId?: string;
+  role?: Role;
   limit?: number;
   minHours?: number;
   now?: Date;
@@ -100,15 +108,34 @@ export async function carregaRadarDeRisco(
   const now = opts.now ?? new Date();
   const nowIso = now.toISOString();
 
-  const { data: leads, error: leadsErr } = await admin
+  let visibilityMode: VisibilityMode = "all";
+  const restringeAtendente = opts.role === "agent" && Boolean(opts.actorUserId);
+  if (restringeAtendente) {
+    const { data: org, error: orgErr } = await admin
+      .from("organizations")
+      .select("settings")
+      .eq("id", organizationId)
+      .single();
+    if (orgErr) throw new Error(`radar_visibility_failed: ${orgErr.message}`);
+    visibilityMode =
+      ((org.settings as { visibility_mode?: VisibilityMode } | null)?.visibility_mode ??
+        DEFAULT_VISIBILITY_MODE);
+  }
+
+  let leadsQuery = admin
     .from("crm_leads")
     .select(
       "id, title, contact_id, owner_user_id, owner_kind, owner_agent_id, stage_id, last_activity_at, created_at, pipeline_id",
     )
     .eq("organization_id", organizationId)
     .eq("status", "open")
-    .order("last_activity_at", { ascending: true, nullsFirst: true })
-    .limit(SCAN_CAP);
+    .order("last_activity_at", { ascending: true, nullsFirst: true });
+  if (restringeAtendente && visibilityMode === "own") {
+    leadsQuery = leadsQuery.eq("owner_user_id", opts.actorUserId!);
+  } else if (restringeAtendente && visibilityMode === "own_and_unassigned") {
+    leadsQuery = leadsQuery.or(`owner_user_id.eq.${opts.actorUserId!},owner_user_id.is.null`);
+  }
+  const { data: leads, error: leadsErr } = await leadsQuery.limit(SCAN_CAP);
   if (leadsErr) throw new Error(`radar_query_failed: ${leadsErr.message}`);
 
   const rows = leads ?? [];
@@ -245,16 +272,80 @@ export async function carregaRadarDeRisco(
   // IA usa (lib/mcp/tools/retencao.ts), e a tela e o agente têm de dizer a
   // mesma coisa sobre o mesmo negócio. Reescrevê-la agora arriscaria essa
   // paridade sem necessidade; acrescentar não arrisca nada.
-  const { data: semPasso } = await admin
+  const { data: semPasso, error: semPassoErr } = await admin
     .from("demandas")
-    .select("id, contact_id, aberta_em, origem, contacts(display_name)")
+    .select("id, contact_id, lead_id, aberta_em, origem, contacts(display_name)")
     .eq("organization_id", organizationId)
     .is("fechada_em", null)
     .is("proximo_passo", null)
     .order("aberta_em", { ascending: true })
-    .limit(limit);
+    .limit(restringeAtendente && visibilityMode !== "all" ? SCAN_CAP : limit);
+  if (semPassoErr) throw new Error(`radar_demands_failed: ${semPassoErr.message}`);
 
-  const semProximoPasso: DemandaSemProximoPasso[] = (semPasso ?? []).map((d) => {
+  const demandas = semPasso ?? [];
+  const idsVisiveis = new Set<string>();
+  if (!restringeAtendente || visibilityMode === "all") {
+    for (const demanda of demandas) idsVisiveis.add(demanda.id);
+  } else {
+    const demandIds = demandas.map((demanda) => demanda.id);
+    const leadIds = demandas
+      .map((demanda) => demanda.lead_id)
+      .filter((id): id is string => id !== null);
+    const [leadOwners, links] = await Promise.all([
+      leadIds.length
+        ? admin
+            .from("crm_leads")
+            .select("id, owner_user_id")
+            .eq("organization_id", organizationId)
+            .in("id", leadIds)
+        : Promise.resolve({ data: [], error: null }),
+      demandIds.length
+        ? admin
+            .from("demanda_conversas")
+            .select("demanda_id, conversation_id")
+            .eq("organization_id", organizationId)
+            .in("demanda_id", demandIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (leadOwners.error) throw new Error(`radar_lead_scope_failed: ${leadOwners.error.message}`);
+    if (links.error) throw new Error(`radar_conversation_links_failed: ${links.error.message}`);
+    const ownerByLead = new Map((leadOwners.data ?? []).map((lead) => [lead.id, lead.owner_user_id]));
+    const conversationIds = (links.data ?? []).map((link) => link.conversation_id);
+    const conversations = conversationIds.length
+      ? await admin
+          .from("conversations")
+          .select("id, assigned_to_user_id")
+          .eq("organization_id", organizationId)
+          .in("id", conversationIds)
+      : { data: [], error: null };
+    if (conversations.error) {
+      throw new Error(`radar_conversation_scope_failed: ${conversations.error.message}`);
+    }
+    const assigneeByConversation = new Map(
+      (conversations.data ?? []).map((conversation) => [conversation.id, conversation.assigned_to_user_id]),
+    );
+    const linksByDemand = new Map<string, string[]>();
+    for (const link of links.data ?? []) {
+      const current = linksByDemand.get(link.demanda_id) ?? [];
+      current.push(link.conversation_id);
+      linksByDemand.set(link.demanda_id, current);
+    }
+    const visivel = (owner: string | null | undefined) =>
+      owner === opts.actorUserId || (visibilityMode === "own_and_unassigned" && owner === null);
+    for (const demanda of demandas) {
+      if (demanda.lead_id && visivel(ownerByLead.get(demanda.lead_id))) {
+        idsVisiveis.add(demanda.id);
+        continue;
+      }
+      const linked = linksByDemand.get(demanda.id) ?? [];
+      if (linked.some((id) => visivel(assigneeByConversation.get(id)))) idsVisiveis.add(demanda.id);
+    }
+  }
+
+  const semProximoPasso: DemandaSemProximoPasso[] = demandas
+    .filter((d) => idsVisiveis.has(d.id))
+    .slice(0, limit)
+    .map((d) => {
     // O join do PostgREST vem como ARRAY mesmo em relação um-para-um.
     const rel = d.contacts as unknown as { display_name: string | null }[] | { display_name: string | null } | null;
     const contato = Array.isArray(rel) ? (rel[0] ?? null) : rel;
@@ -268,7 +359,7 @@ export async function carregaRadarDeRisco(
       ),
       origem: d.origem as string,
     };
-  });
+    });
 
   return {
     items: radar.slice(0, limit),

@@ -127,9 +127,12 @@ test("F1 — trocar o modelo GRAVA, e a tela passa a mostrar o novo", async ({ p
   await page.click('[data-testid="provider-stage_classifier"]');
   await page.getByRole("option", { name: /OpenRouter/ }).click();
   await page.click('[data-testid="modelo-stage_classifier"]');
-  const llama = page.getByRole("option", { name: /Llama 3\.3 70B Instruct/ });
-  await llama.scrollIntoViewIfNeeded();
-  await llama.click();
+  const opcoes = await page.getByRole("option").allInnerTexts();
+  const indiceLlama = opcoes.findIndex((texto) => /Llama 3\.3 70B Instruct/.test(texto));
+  expect(indiceLlama).toBeGreaterThanOrEqual(0);
+  await page.keyboard.press("Home");
+  for (let indice = 0; indice < indiceLlama; indice++) await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
   await expect(page.locator('[data-testid="modelo-stage_classifier"]')).toContainText(
     /Llama 3\.3 70B Instruct/,
   );

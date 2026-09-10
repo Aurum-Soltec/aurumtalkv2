@@ -404,6 +404,8 @@ export const crmListAtRiskLeads: McpToolDefinition<typeof radarShape> = {
   handler: async (input, ctx) => {
     const radar = await carregaRadarDeRisco(ctx.supabase, {
       organizationId: ctx.organizationId,
+      ...(ctx.actor.type === "user" ? { actorUserId: ctx.actor.id } : {}),
+      role: ctx.role,
       limit: input.limit,
       ...(input.min_hours !== undefined ? { minHours: input.min_hours } : {}),
     });

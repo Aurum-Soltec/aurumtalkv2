@@ -33,7 +33,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   const requestId = randomUUID();
   const authz = await requireRole("agent", { requestId, resource: "leads_at_risk" });
   if (!authz.ok) return authz.response;
-  const { org } = authz;
+  const { org, user } = authz;
 
   const parsed = querySchema.safeParse(
     Object.fromEntries(new URL(req.url).searchParams.entries()),
@@ -49,6 +49,8 @@ export async function GET(req: NextRequest): Promise<Response> {
   try {
     const radar = await carregaRadarDeRisco(createAdminClient(), {
       organizationId: org.orgId,
+      actorUserId: user.id,
+      role: org.role,
       limit,
       minHours: min_hours,
     });

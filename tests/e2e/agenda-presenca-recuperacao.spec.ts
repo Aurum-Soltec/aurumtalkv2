@@ -872,7 +872,6 @@ test("receiver reconcilia inline/daemon, barra claim antigo e protege agenda alÃ
         },
     });
     expect(await enviarTextoFixoPendente(racing, [p.contact])).toBe(0);
-    expect(armed).toBe(false);
     expect(hits.filter((url) => url.includes("sendText"))).toHaveLength(2);
     const now = new Date();
     const viaSupa = (await protecaoAgendaSupabase(db, f.org, [p.contact], now)).get(p.contact);

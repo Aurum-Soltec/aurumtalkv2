@@ -6413,6 +6413,7 @@ export const DICIONARIO: Traducoes = {
   "Abrir conversa": { es: "Abrir conversación" },
   "Abrir negócio": { es: "Abrir negocio" },
   "Abrir acompanhamento": { es: "Abrir seguimiento" },
+  "Marcar compromisso": { es: "Programar cita" },
   "Revisar conexão": { es: "Revisar conexión" },
   "Abrir base de conhecimento": { es: "Abrir base de conocimiento" },
   "Abrir uma conversa afetada": { es: "Abrir una conversación afectada" },
