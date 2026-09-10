@@ -15,7 +15,10 @@ import { runFollowupTick, createSupabaseAdminClient } from "@/lib/followup/engin
 
 vi.mock("@/lib/env", () => ({ env: { INTERNAL_SECRET: "dev-secret", INTERNAL_CRON_SECRET: "" } }));
 vi.mock("@/lib/audit", () => ({ audit: vi.fn(async () => undefined) }));
-vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: vi.fn(() => ({ from: vi.fn() })) }));
+const rpc = vi.fn(async () => ({ data: 0, error: null }));
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: vi.fn(() => ({ from: vi.fn(), rpc })),
+}));
 vi.mock("@/lib/followup/engine", () => ({
   runFollowupTick: vi.fn(),
   createSupabaseAdminClient: vi.fn(() => ({})),
@@ -53,8 +56,12 @@ describe("GET/POST /api/v1/cron/followup-flow-worker", () => {
     const { POST } = await import("@/app/api/v1/cron/followup-flow-worker/route");
     const res = await POST(req({ authorization: "Bearer dev-secret" }));
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { data: typeof summary };
-    expect(body.data).toEqual(summary);
+    const body = (await res.json()) as { data: typeof summary & { confirmations_required: number } };
+    expect(body.data).toEqual({ ...summary, confirmations_required: 0 });
+    expect(rpc).toHaveBeenCalledWith("fn_appointment_confirmation_sweep", {
+      p_limit: 500,
+      p_now: expect.any(String),
+    });
     expect(vi.mocked(createSupabaseAdminClient)).toHaveBeenCalledWith(expect.anything());
     expect(vi.mocked(createAdminClient)).toHaveBeenCalled();
     expect(vi.mocked(audit)).toHaveBeenCalledWith(
