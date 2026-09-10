@@ -8,11 +8,20 @@ import type { EnrollmentRow } from "@/lib/followup/node-handlers";
 import { completeTurnForEnrollment, type TurnBridgeAdminClient } from "@/lib/followup/turn-bridge";
 import { logger } from "@/lib/logger";
 import { assertAgendaEffectSupabase } from "@/lib/agenda/efeito";
+import { randomUUID } from "node:crypto";
+import { sendWithLedger, supabaseSendLedger } from "@/lib/agent-engine/edge/crm/send-ledger";
+import { parseServiceBoundary } from "@/lib/atendimento/fronteira";
 
 function ponteSupabase(admin: SupabaseClient): TurnBridgeAdminClient {
   const base = createSupabaseAdminClient(admin);
   return {
     ...base,
+    async applyEnrollmentStep(orgId, id, revision, patch, event) {
+      const { error } = await admin.rpc("fn_followup_apply_step", {
+        p_org: orgId, p_id: id, p_revision: revision, p_patch: patch, p_event: event,
+      });
+      if (error) throw error;
+    },
     async loadEnrollmentById(orgId, id) {
       const { data, error } = await admin
         .from("followup_enrollments")
@@ -32,13 +41,17 @@ export async function enviarTextoFixoPendente(
   admin: SupabaseClient,
   somenteContactIds?: string[],
 ): Promise<number> {
-  const { data: jobs, error } = await admin
+  let query = admin
     .from("job_queue")
     .select("id, organization_id, contact_id, payload")
     .eq("kind", "followup_turn")
     .eq("status", "pending")
-    .order("created_at", { ascending: true })
-    .limit(5);
+    .order("created_at", { ascending: true });
+  if (somenteContactIds) {
+    if (!somenteContactIds.length) return 0;
+    query = query.in("contact_id", somenteContactIds);
+  }
+  const { data: jobs, error } = await query.limit(5);
   if (error) throw new Error(error.message);
 
   let enviados = 0;
@@ -52,15 +65,22 @@ export async function enviarTextoFixoPendente(
     if (typeof body !== "string" || !body || !enrollmentId || !nodeId || !contactId) continue;
     if (somenteContactIds && !somenteContactIds.includes(contactId)) continue;
 
+    const worker = `inline:${randomUUID()}`;
     const { data: claimed, error: claimErr } = await admin
       .from("job_queue")
-      .update({ status: "running" })
+      .update({ status: "running", locked_by: worker, locked_at: new Date().toISOString() })
+      .eq("organization_id", job.organization_id)
       .eq("id", job.id)
       .eq("status", "pending")
-      .select("id")
+      .select("id,locked_at")
       .maybeSingle();
     if (claimErr) throw new Error(claimErr.message);
     if (!claimed) continue;
+    const jobClaim = { worker_id: worker, acquired_at: claimed.locked_at as string };
+    const updateJob = (values: Record<string, unknown>) => admin.from("job_queue")
+      .update({ ...values, locked_by: null, locked_at: null })
+      .eq("organization_id", job.organization_id).eq("id", job.id)
+      .eq("status", "running").eq("locked_by", worker).eq("locked_at", jobClaim.acquired_at);
 
     try {
       const { data: enr } = await admin
@@ -70,13 +90,13 @@ export async function enviarTextoFixoPendente(
         .eq("organization_id", job.organization_id as string)
         .maybeSingle();
       if (!enr || enr.current_node_id !== nodeId) {
-        await admin.from("job_queue").update({ status: "done" }).eq("id", job.id);
+        await updateJob({ status: "done" });
         continue;
       }
       const sessionId = await sessaoProntaParaEnvio(admin, job.organization_id as string);
       if (!sessionId) {
         logger.warn("[dev.pipeline] sem sessão de canal — job volta pra pending");
-        await admin.from("job_queue").update({ status: "pending" }).eq("id", job.id);
+        await updateJob({ status: "pending" });
         continue;
       }
       const conversationId = await ensureConversation(
@@ -93,35 +113,46 @@ export async function enviarTextoFixoPendente(
         contactId,
         enrollmentId,
         nodeId,
+        jobId: job.id,
+        jobClaim,
       });
-      await sendMessageHandler(
+      const outcome = await sendWithLedger(supabaseSendLedger(admin), {
+        tenantId: job.organization_id, leadId: contactId, jobId: job.id, seq: 1, body,
+      }, (key, messageId) => sendMessageHandler(
         admin,
         {
           organization_id: job.organization_id as string,
           actor: { type: "webhook_source", id: enrollmentId },
-          requestId: `followup:${job.id}`,
+          requestId: key,
+          internalMessageId: messageId,
+          serviceBoundary: parseServiceBoundary((job.payload as Record<string, unknown>).service_boundary),
+          proactiveContext: { organizationId: job.organization_id, contactId, enrollmentId,
+            nodeId, jobId: job.id, jobClaim },
         },
-        { conversation_id: conversationId, type: "text", body },
-      );
+        { conversation_id: conversationId, type: "text", body, metadata: { idempotency_key: key } },
+      ));
+      if (outcome.kind !== "sent" && outcome.kind !== "already_sent") {
+        await updateJob({ status: outcome.kind === "blocked" ? "canceled" : "pending",
+          last_error: `followup_send_${outcome.kind}` });
+        continue;
+      }
       enviados++;
       try {
         await completeTurnForEnrollment(ponte, job.organization_id as string, enrollmentId, nodeId, {
           kind: "sent",
-        });
+        }, undefined, job.id, jobClaim);
       } catch (err) {
         logger.warn("[dev.pipeline] completeTurn apos envio", {
           error: err instanceof Error ? err.message : String(err),
         });
+        throw err;
       }
-      const { error: doneErr } = await admin.from("job_queue").update({ status: "done" }).eq("id", job.id);
+      const { error: doneErr } = await updateJob({ status: "done", last_error: null });
       if (doneErr) throw new Error(doneErr.message);
     } catch (err) {
       const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : String(err);
       logger.warn("[dev.pipeline] envio inline falhou", { error: message });
-      await admin
-        .from("job_queue")
-        .update({ status: "pending", last_error: message.slice(0, 300) })
-        .eq("id", job.id);
+      await updateJob({ status: "pending", last_error: message.slice(0, 300) });
     }
   }
   return enviados;

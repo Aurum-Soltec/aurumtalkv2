@@ -134,7 +134,20 @@ export function useRealtimeChannel(opts: UseRealtimeChannelOpts): {
      * mesmo objeto devolve SUBSCRIBED sem nunca mais entregar. Morte silenciosa,
      * a mesma classe de defeito que a memo de auth já tinha aqui.
      */
-    const montar = () => {
+    const montar = async () => {
+      if (cancelado) return;
+      // A callback continua sendo a fonte do token, mas subscribe() pode emitir
+      // phx_join antes da primeira resolução assíncrona dela. O trace do CI
+      // mostrou join sem access_token seguido de access_token tarde demais.
+      try {
+        await supabase.realtime.setAuth();
+      } catch {
+        if (cancelado) return;
+        setStatus("channel_error");
+        const espera = Math.min(30_000, 1_000 * 2 ** tentativas++);
+        retomada = setTimeout(() => void montar(), espera);
+        return;
+      }
       if (cancelado) return;
 
       let novo: RealtimeChannel = supabase.channel(`${channelName}#${tentativas}`);
@@ -153,9 +166,7 @@ export function useRealtimeChannel(opts: UseRealtimeChannelOpts): {
       if (broadcast) novo = novo.on("broadcast", { event: broadcast.event }, handler);
       active = novo;
 
-      // Sem espera por token: quem o entrega é a callback `accessToken` do
-      // client, e o socket a resolve ANTES de emitir o join. Este hook cuida
-      // só do que é dele — topologia, recuperação e o carimbo de entrega.
+      // O primeiro token já foi resolvido acima; a callback renova os demais.
       novo.subscribe((s) => {
         if (cancelado || active !== novo) return;
         // s is one of "SUBSCRIBED" | "CHANNEL_ERROR" | "TIMED_OUT" | "CLOSED"

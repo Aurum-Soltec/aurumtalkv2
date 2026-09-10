@@ -366,4 +366,27 @@ describe("completeTurnForEnrollment — obsolescência", () => {
 
     expect(updateEnrollment).not.toHaveBeenCalled();
   });
+
+  it("grava evento e avanço em uma operação atômica com a revisão lida", async () => {
+    const { db, updateEnrollment, insertEnrollmentEvent } = fakeDb({
+      enrollment: enrollment({ revision: 7 }), graph: ACTION_GRAPH,
+    });
+    db.applyEnrollmentStep = vi.fn().mockResolvedValue(undefined);
+    await completeTurnForEnrollment(db, "org-1", "enr-1", "a1", { kind: "sent" }, clock);
+    expect(db.applyEnrollmentStep).toHaveBeenCalledWith("org-1", "enr-1", 7,
+      expect.objectContaining({ current_node_id: "e1", steps_taken: 5 }),
+      expect.objectContaining({ event_type: "action_sent", idempotency_key: "a1:4" }));
+    expect(updateEnrollment).not.toHaveBeenCalled();
+    expect(insertEnrollmentEvent).not.toHaveBeenCalled();
+  });
+
+  it("propaga falha atômica sem deixar um evento separado que bloquearia o retry", async () => {
+    const { db, insertEnrollmentEvent } = fakeDb({
+      enrollment: enrollment({ revision: 7 }), graph: ACTION_GRAPH,
+    });
+    db.applyEnrollmentStep = vi.fn().mockRejectedValue(new Error("callback unavailable"));
+    await expect(completeTurnForEnrollment(db, "org-1", "enr-1", "a1", { kind: "sent" }, clock))
+      .rejects.toThrow("callback unavailable");
+    expect(insertEnrollmentEvent).not.toHaveBeenCalled();
+  });
 });

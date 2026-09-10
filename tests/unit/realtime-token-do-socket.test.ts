@@ -72,7 +72,9 @@ describe("o token que o socket do Realtime usa", () => {
     // Duas fontes de token foi exatamente o defeito. Se o hook voltar a chamar
     // setAuth, a que vence é a callback e a outra vira mentira no código.
     const hook = soCodigo(readFileSync("hooks/realtime/useRealtimeChannel.ts", "utf8"));
-    expect(hook, "o hook voltou a chamar setAuth").not.toMatch(/\.setAuth\(/);
+    // Sem argumento: aguarda a callback canônica, não injeta outra fonte.
+    expect(hook).toMatch(/await supabase\.realtime\.setAuth\(\)/);
+    expect(hook).not.toMatch(/\.setAuth\(\s*[^)\s]/);
     expect(hook, "o hook voltou a buscar token por conta própria").not.toMatch(
       /realtime-token/,
     );

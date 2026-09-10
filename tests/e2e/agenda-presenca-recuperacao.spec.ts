@@ -699,7 +699,22 @@ test("receiver reconcilia inline/daemon, barra claim antigo e protege agenda al�
       return { id, job, enrollment: r.enrollment_id };
     }
     const first = await prepared("Recuperação permitida");
-    expect(await enviarTextoFixoPendente(db, [p.contact])).toBe(1);
+    let callbackUnavailable = true;
+    const interrupted = createClient(credentials.url, credentials.serviceRole, {
+      auth: { persistSession: false },
+      global: { fetch: async (input, init) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        if (callbackUnavailable && url.includes("/rpc/fn_followup_apply_step")) {
+          callbackUnavailable = false;
+          return new Response(JSON.stringify({ message: "callback unavailable before commit" }), {
+            status: 503, headers: { "content-type": "application/json" },
+          });
+        }
+        return fetch(input, init);
+      } },
+    });
+    expect(await enviarTextoFixoPendente(interrupted, [p.contact])).toBe(1);
+    expect(callbackUnavailable, "a falha precisa atingir a conclusão atômica").toBe(false);
     expect(hits.filter((url) => url.includes("sendText"))).toHaveLength(1);
     expect(
       (
@@ -853,6 +868,7 @@ test("receiver reconcilia inline/daemon, barra claim antigo e protege agenda al�
         },
     });
     expect(await enviarTextoFixoPendente(racing, [p.contact])).toBe(0);
+    expect(armed, "o novo compromisso precisa nascer durante o preparo").toBe(false);
     expect(hits.filter((url) => url.includes("sendText"))).toHaveLength(2);
     const now = new Date();
     const viaSupa = (await protecaoAgendaSupabase(db, f.org, [p.contact], now)).get(p.contact);

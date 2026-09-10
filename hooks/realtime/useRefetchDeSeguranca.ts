@@ -1,6 +1,6 @@
 "use client";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { hashKey, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 /**
  * O REFETCH DE SEGURANÇA — uma peça com três papéis.
@@ -73,6 +73,10 @@ export function useRefetchDeSeguranca<T>({
   enabled = true,
 }: Opts<T>): RefetchDeSeguranca {
   const qc = useQueryClient();
+  // A identidade do array muda nos renders dos consumidores. O relógio segue
+  // a identidade da consulta (a mesma usada pelo cache), não a do array.
+  const queryHash = hashKey(queryKey);
+  const chaveEstavel = useMemo(() => JSON.parse(queryHash) as readonly unknown[], [queryHash]);
   const [estado, setEstado] = useState<RefetchDeSeguranca>({
     divergencias: 0,
     ultimaDivergencia: null,
@@ -91,11 +95,11 @@ export function useRefetchDeSeguranca<T>({
   }, [assinatura]);
 
   const verificar = useCallback(async () => {
-    const antes = assinaturaRef.current(qc.getQueryData<T>(queryKey));
+    const antes = assinaturaRef.current(qc.getQueryData<T>(chaveEstavel));
 
-    await qc.refetchQueries({ queryKey, exact: true });
+    await qc.refetchQueries({ queryKey: chaveEstavel, exact: true });
 
-    const depois = assinaturaRef.current(qc.getQueryData<T>(queryKey));
+    const depois = assinaturaRef.current(qc.getQueryData<T>(chaveEstavel));
 
     setEstado((prev) => {
       // O CRITÉRIO, em duas perguntas:
@@ -122,7 +126,7 @@ export function useRefetchDeSeguranca<T>({
     });
     // `ultimaEntrega` é ref (identidade estável): entra na lista por higiene,
     // sem recriar o callback nem reiniciar o intervalo.
-  }, [qc, queryKey, ultimaEntrega]);
+  }, [qc, chaveEstavel, ultimaEntrega]);
 
   useEffect(() => {
     if (!enabled) return;

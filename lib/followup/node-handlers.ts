@@ -25,6 +25,8 @@ export type EnrollmentOutcome = "converted" | "replied" | "exhausted" | "opted_o
  * can produce it. Field names mirror the table (migration 0054) 1:1.
  */
 export interface EnrollmentRow {
+  /** Revisão otimista persistida; adapters de produção sempre a carregam. */
+  revision?: number;
   id: string;
   organization_id: string;
   pointer_id: string;

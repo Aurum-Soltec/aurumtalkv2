@@ -30,6 +30,10 @@ import { persistirRespostaFollowupPg } from "./persistir-resposta";
  *  que ele não usa (HANDOFF Decisões — AdminClient é interface própria e
  *  estreita por consumidor). */
 export interface TurnBridgeAdminClient extends AdminClient {
+  applyEnrollmentStep?(
+    orgId: string, id: string, revision: number, patch: EnrollmentPatch,
+    event: Record<string, unknown>,
+  ): Promise<void>;
   loadEnrollmentById(orgId: string, id: string): Promise<EnrollmentRow | null>;
   isTurnCurrent?(
     orgId: string,
@@ -108,6 +112,18 @@ export async function completeTurnForEnrollment(
     payload: Record<string, unknown>,
     patch: EnrollmentPatch,
   ): Promise<void> => {
+    if (db.applyEnrollmentStep) {
+      const revision = enrollment.revision;
+      if (revision === undefined) throw new Error("followup_revision_missing");
+      await db.applyEnrollmentStep(orgId, enrollmentId, revision, {
+        ...patch, steps_taken: enrollment.steps_taken + 1,
+        claimed_until: null, updated_at: now.toISOString(),
+      }, {
+        node_id: node.id, event_type: eventType, payload, idempotency_key: idemKey,
+        ...(jobId && jobClaim ? { job_id: jobId, job_claim: jobClaim } : {}),
+      });
+      return;
+    }
     const { inserted } = await db.insertEnrollmentEvent({
       organization_id: orgId,
       enrollment_id: enrollmentId,
@@ -233,12 +249,17 @@ function mapEnrollmentRow(row: Record<string, unknown>): EnrollmentRow {
     // `?? null` e não `as TimingPlan`: num clone sem a migration 0144 a chave
     // simplesmente não vem, e "sem plano" é exatamente o que null significa.
     timing_plan: row.timing_plan ?? null,
+    revision: Number(row.revision),
   };
 }
 
 /** `TurnBridgeAdminClient` sobre `pg.Pool` — produção do worker 24/7. */
 export function createPgAdminClient(pool: pg.Pool): TurnBridgeAdminClient {
   return {
+    async applyEnrollmentStep(orgId, id, revision, patch, event) {
+      await pool.query("select fn_followup_apply_step($1,$2,$3,$4::jsonb,$5::jsonb)",
+        [orgId, id, revision, JSON.stringify(patch), JSON.stringify(event)]);
+    },
     async claimDueEnrollments(limit, leaseSeconds) {
       const { rows } = await pool.query(`select * from fn_claim_due_followup_enrollments($1, $2)`, [
         limit,

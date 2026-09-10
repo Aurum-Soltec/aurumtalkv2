@@ -121,7 +121,12 @@ test.describe("degradação silenciosa do tempo real", () => {
       route.onMessage((m) => servidor.send(m));
       servidor.onMessage((m) => {
         quadrosTotais++;
-        if (bloquearEntregas) {
+        let evento: unknown;
+        try {
+          const frame = JSON.parse(typeof m === "string" ? m : m.toString());
+          evento = Array.isArray(frame) ? frame[3] : frame.event;
+        } catch { /* Controle não JSON continua trafegando. */ }
+        if (bloquearEntregas && evento === "postgres_changes") {
           engolidos++;
           return;
         }
@@ -156,11 +161,7 @@ test.describe("degradação silenciosa do tempo real", () => {
     const marca = `CERCA${Date.now() % 100000}`;
     bloquearEntregas = true;
     await admin.from("crm_leads").update({ title: `${lead.title} ${marca}` }).eq("id", lead.id);
-    // O heartbeat natural do Phoenix ocorre a cada ~30s. Esperar atravessá-lo
-    // garante que o proxy engoliu uma resposta real mantendo o socket aberto.
-    await page.waitForTimeout(35_000);
-    const texto = ((await page.locator("body").innerText()) ?? "").replace(/\s+/g, " ");
-    await admin.from("crm_leads").update({ title: lead.title }).eq("id", lead.id);
+    await expect.poll(() => engolidos, { timeout: 10_000 }).toBeGreaterThan(0);
 
     // PRÉ-CONDIÇÃO ANTES DA ASSERÇÃO: se nenhum quadro de dados foi engolido, a
     // entrega não foi morta e o teste não mediu degradação nenhuma. Sem esta
@@ -172,10 +173,14 @@ test.describe("degradação silenciosa do tempo real", () => {
         `não chegou a ser morta, então esta execução não exercita a degradação`,
     ).toBeGreaterThan(0);
 
-    // E a mudança NÃO pode ter aparecido: se apareceu, existe outro caminho vivo
-    // (refetch, polling) e a premissa da cerca mudou — o que também é notícia.
-    expect(texto, "a mudança apareceu mesmo com a entrega morta — há outro caminho vivo").not.toContain(marca);
-
-    expect(texto, "a tela não diz nada sobre estar possivelmente desatualizada").toMatch(AVISO);
+    // O contrato do refetch de segurança é CURAR e AVISAR (intervalo de 45s),
+    // não manter a tela velha. Antes dele a marca não veio pelo socket.
+    await expect(page.locator("body")).not.toContainText(marca);
+    try {
+      await expect(page.locator("body")).toContainText(marca, { timeout: 55_000 });
+      await expect(page.locator("body")).toContainText(AVISO);
+    } finally {
+      await admin.from("crm_leads").update({ title: lead.title }).eq("id", lead.id);
+    }
   });
 });

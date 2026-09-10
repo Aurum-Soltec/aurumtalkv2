@@ -83,6 +83,18 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     const other = await otherContext.newPage();
     const guest = await guestContext.newPage();
     let interfaceSubscribed = false;
+    let interfaceAuthenticated = false;
+    member.on("websocket", (ws) => ws.on("framesent", (event) => {
+      try {
+        const frame = JSON.parse(event.payload.toString());
+        const topic = Array.isArray(frame) ? frame[2] : frame.topic;
+        const kind = Array.isArray(frame) ? frame[3] : frame.event;
+        const payload = Array.isArray(frame) ? frame[4] : frame.payload;
+        if (String(topic).startsWith("realtime:interface:") && kind === "phx_join") {
+          interfaceAuthenticated = Boolean(payload?.access_token);
+        }
+      } catch { /* Controle não JSON não é assinatura. */ }
+    }));
     member.on("websocket", (ws) =>
       ws.on("framereceived", (event) => {
         const payload = event.payload.toString();
@@ -110,12 +122,13 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await login(other, emails[2]!);
     await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toBeVisible();
     await expect.poll(() => interfaceSubscribed, { timeout: 15_000 }).toBe(true);
+    expect(interfaceAuthenticated, "o join precisa levar o token, não recebê-lo depois").toBe(true);
     await customize(page, emails[1]!);
     // A mudança automática, preservando o rascunho e a URL, prova que o canal
     // reconciliou o vínculo sem reload nem navegação. O frame bruto varia entre
     // versões do protocolo Phoenix e não é contrato da interface.
     await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toHaveCount(0, {
-      timeout: 40_000,
+      timeout: 10_000,
     });
     await expect(nav(other).getByRole("link", { name: "Radar", exact: true })).toBeVisible();
     await expect(member.getByLabel("Nome completo")).toHaveValue("Rascunho não salvo");
