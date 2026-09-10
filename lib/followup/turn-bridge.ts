@@ -115,13 +115,21 @@ export async function completeTurnForEnrollment(
     if (db.applyEnrollmentStep) {
       const revision = enrollment.revision;
       if (revision === undefined) throw new Error("followup_revision_missing");
-      await db.applyEnrollmentStep(orgId, enrollmentId, revision, {
+      try {
+        await db.applyEnrollmentStep(orgId, enrollmentId, revision, {
         ...patch, steps_taken: enrollment.steps_taken + 1,
         claimed_until: null, updated_at: now.toISOString(),
       }, {
         node_id: node.id, event_type: eventType, payload, idempotency_key: idemKey,
         ...(jobId && jobClaim ? { job_id: jobId, job_claim: jobClaim } : {}),
-      });
+        });
+      } catch (error) {
+        // A transação foi desfeita inteira: repetir um evento já confirmado
+        // é no-op. Outras constraints/CAS continuam sendo falhas reais.
+        const failure = error as { code?: string; constraint?: string; message?: string };
+        if (failure.code !== "23505" || !(failure.constraint === "idx_followup_events_idem" ||
+          failure.message?.includes('"idx_followup_events_idem"'))) throw error;
+      }
       return;
     }
     const { inserted } = await db.insertEnrollmentEvent({

@@ -11,6 +11,7 @@ import { assertAgendaEffectSupabase } from "@/lib/agenda/efeito";
 import { randomUUID } from "node:crypto";
 import { sendWithLedger, supabaseSendLedger } from "@/lib/agent-engine/edge/crm/send-ledger";
 import { parseServiceBoundary } from "@/lib/atendimento/fronteira";
+import type { JobStatus } from "@/lib/agent-engine/queue/queue";
 
 function ponteSupabase(admin: SupabaseClient): TurnBridgeAdminClient {
   const base = createSupabaseAdminClient(admin);
@@ -77,10 +78,14 @@ export async function enviarTextoFixoPendente(
     if (claimErr) throw new Error(claimErr.message);
     if (!claimed) continue;
     const jobClaim = { worker_id: worker, acquired_at: claimed.locked_at as string };
-    const updateJob = (values: Record<string, unknown>) => admin.from("job_queue")
+    const updateJob = async (values: { status: JobStatus; last_error?: string | null }) => {
+      const result = await admin.from("job_queue")
       .update({ ...values, locked_by: null, locked_at: null })
       .eq("organization_id", job.organization_id).eq("id", job.id)
       .eq("status", "running").eq("locked_by", worker).eq("locked_at", jobClaim.acquired_at);
+      if (result.error) throw new Error(result.error.message);
+      return result;
+    };
 
     try {
       const { data: enr } = await admin
@@ -132,7 +137,7 @@ export async function enviarTextoFixoPendente(
         { conversation_id: conversationId, type: "text", body, metadata: { idempotency_key: key } },
       ));
       if (outcome.kind !== "sent" && outcome.kind !== "already_sent") {
-        await updateJob({ status: outcome.kind === "blocked" ? "canceled" : "pending",
+        await updateJob({ status: outcome.kind === "blocked" ? "failed" : "pending",
           last_error: `followup_send_${outcome.kind}` });
         continue;
       }

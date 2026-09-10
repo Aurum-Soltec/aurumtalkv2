@@ -389,4 +389,12 @@ describe("completeTurnForEnrollment — obsolescência", () => {
       .rejects.toThrow("callback unavailable");
     expect(insertEnrollmentEvent).not.toHaveBeenCalled();
   });
+
+  it("replay atômico só ignora a constraint de idempotência do evento", async () => {
+    const { db } = fakeDb({ enrollment: enrollment({ revision: 7 }), graph: ACTION_GRAPH });
+    db.applyEnrollmentStep = vi.fn().mockRejectedValue({ code: "23505", constraint: "idx_followup_events_idem" });
+    await expect(completeTurnForEnrollment(db, "org-1", "enr-1", "a1", { kind: "sent" }, clock)).resolves.toBeUndefined();
+    db.applyEnrollmentStep = vi.fn().mockRejectedValue({ code: "23505", constraint: "outra_constraint" });
+    await expect(completeTurnForEnrollment(db, "org-1", "enr-1", "a1", { kind: "sent" }, clock)).rejects.toMatchObject({ constraint: "outra_constraint" });
+  });
 });
