@@ -38,6 +38,10 @@ import { nomeiaProvider } from "./lint-channels.pattern";
 const ROOTS = ["app", "lib", "components", "workers"];
 const ALLOWED = [
   /^lib\/channels\//,
+  // Transporte de métricas e conversões de anúncios; é outro eixo do produto,
+  // não um canal de entrega de mensagem. Os nomes da plataforma pertencem a
+  // esta fronteira, não à feature que usa o resultado.
+  /^lib\/plataformas-de-anuncio\//,
   // O transporte que o adapter embrulha; some quando a Fase 3 o absorver.
   /^lib\/waha\//,
   // Saída de `supabase gen types`: os nomes são COLUNAS. Editar à mão é o defeito.
@@ -85,6 +89,9 @@ const KNOWN_DEBT: { reason: string; files: string[] }[] = [
       "app/app/connections/page.tsx",
       "app/onboarding/connect-whatsapp/page.tsx",
       "lib/agent-engine/edge/crm/session-reconciler.ts",
+      // Fixture do teste: o contrato legado exige o identificador do transporte
+      // para validar o redrive. Não é uma feature escolhendo provider.
+      "lib/agent-engine/edge/crm/session-reconciler.test.ts",
       "workers/media-persist-worker.ts",
     ],
   },

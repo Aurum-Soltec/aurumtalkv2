@@ -235,6 +235,26 @@ create table if not exists auth.users (
   created_at timestamptz not null default now()
 );
 
+-- Stub de auth.sessions: o GoTrue real fornece a sessão que as funções de
+-- suporte consultam para validar usuário, nível de autenticação e expiração.
+-- Os invariantes inserem estes quatro campos; manter o stub aqui evita que o
+-- harness declare funções válidas, mas quebre na primeira chamada.
+create table if not exists auth.sessions (
+  id uuid primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  aal text not null default 'aal1',
+  not_after timestamptz
+);
+
+-- Stub de auth.mfa_factors: as funções de autorização só precisam distinguir
+-- fator TOTP verificado de qualquer outro estado.
+create table if not exists auth.mfa_factors (
+  id uuid primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  status text not null,
+  factor_type text not null
+);
+
 -- Stub de auth.uid() lendo o claim `sub` de request.jwt.claims (mesmo contrato
 -- do Supabase; os testes simulam o JWT via set_config).
 --
@@ -263,8 +283,21 @@ create or replace function auth.uid() returns uuid
     )::uuid
   $fn$;
 
+-- Stub de auth.jwt(): as funções SQL leem os mesmos claims que os testes
+-- colocam em request.jwt.claims, incluindo aal e session_id.
+create or replace function auth.jwt() returns jsonb
+  language sql stable
+  as $fn$
+    select coalesce(
+      nullif(current_setting('request.jwt.claims', true), '')::jsonb,
+      '{}'::jsonb
+    )
+  $fn$;
+
 grant usage on schema auth, extensions, storage to anon, authenticated, service_role;
 grant select on auth.users to anon, authenticated, service_role;
+grant select on auth.sessions to anon, authenticated, service_role;
+grant select on auth.mfa_factors to anon, authenticated, service_role;
 SQL
 
 echo "==> conferindo que o banco efêmero é o do PRODUTO (antes do baseline)"

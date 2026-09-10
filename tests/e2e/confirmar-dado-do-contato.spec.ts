@@ -58,7 +58,7 @@ async function cenario(page: Page, nome: string, valor: string, trecho: string):
   const script = `
     import { createClient } from "@supabase/supabase-js";
     import { proporDadoDoContato } from "@/lib/contacts/proposta-de-dado";
-    import { credenciaisSupabaseDeTeste } from "./scripts/lib/env-de-teste";
+    import { credenciaisSupabaseDeTeste } from "./lib/env-de-teste";
     const c = credenciaisSupabaseDeTeste();
     const db = createClient(c.url, c.serviceRole, { auth: { autoRefreshToken: false, persistSession: false } });
     async function main() {
