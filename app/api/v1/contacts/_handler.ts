@@ -622,7 +622,7 @@ export async function patchContactHandler(
     const prevTags: string[] = (existing as { tags?: string[] }).tags ?? [];
     const addedTags = input.tags.filter((t) => !prevTags.includes(t));
     if (addedTags.length) {
-      await createAdminClient()
+      await supabase
         .rpc("emit_event", {
           p_event_type: "contact.tag_added",
           p_entity_kind: "contact",
