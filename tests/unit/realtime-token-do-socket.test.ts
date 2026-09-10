@@ -68,9 +68,9 @@ describe("o token que o socket do Realtime usa", () => {
     ).not.toMatch(/realtime\.setAuth\(/);
   });
 
-  it("o hook do canal NÃO autentica por conta própria — fonte única", () => {
-    // Duas fontes de token foi exatamente o defeito. Se o hook voltar a chamar
-    // setAuth, a que vence é a callback e a outra vira mentira no código.
+  it("o hook aguarda a fonte única, sem fornecer outro token", () => {
+    // setAuth() sem argumento resolve a callback; setAuth(token) introduziria
+    // uma segunda fonte. O join não pode disputar com a resolução inicial.
     const hook = soCodigo(readFileSync("hooks/realtime/useRealtimeChannel.ts", "utf8"));
     // Sem argumento: aguarda a callback canônica, não injeta outra fonte.
     expect(hook).toMatch(/await supabase\.realtime\.setAuth\(\)/);

@@ -125,7 +125,7 @@ export async function enviarTextoFixoPendente(
           actor: { type: "webhook_source", id: enrollmentId },
           requestId: key,
           internalMessageId: messageId,
-          serviceBoundary: parseServiceBoundary((job.payload as Record<string, unknown>).service_boundary),
+          ...(payload.service_boundary ? { serviceBoundary: parseServiceBoundary(payload.service_boundary) } : {}),
           proactiveContext: { organizationId: job.organization_id, contactId, enrollmentId,
             nodeId, jobId: job.id, jobClaim },
         },

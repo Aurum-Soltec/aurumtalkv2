@@ -63,6 +63,8 @@ export interface FollowupJobRequest {
   contact_id: string;
   payload: {
     followup_enrollment_id: string;
+    source_step_key?: string;
+    service_boundary?: unknown;
     node_id: string;
     purpose: "send_message" | "classify" | "plan_timing";
     /** action (mode 'ai_message') — Task 5.1: repassado ao turno pra virar o bloco de orientação. */
@@ -415,6 +417,8 @@ async function applyResult(
           contact_id: enrollment.contact_id,
           payload: {
             followup_enrollment_id: enrollment.id,
+            source_step_key: idemKey,
+            ...(enrollment.service_boundary ? { service_boundary: enrollment.service_boundary } : {}),
             node_id: node.id,
             purpose: result.purpose,
             ...turnPayloadExtras(node, smartWaits, events),

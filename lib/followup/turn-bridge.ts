@@ -250,6 +250,7 @@ function mapEnrollmentRow(row: Record<string, unknown>): EnrollmentRow {
     // simplesmente não vem, e "sem plano" é exatamente o que null significa.
     timing_plan: row.timing_plan ?? null,
     revision: Number(row.revision),
+    service_boundary: row.service_boundary,
   };
 }
 

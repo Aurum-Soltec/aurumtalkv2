@@ -27,6 +27,7 @@ export type EnrollmentOutcome = "converted" | "replied" | "exhausted" | "opted_o
 export interface EnrollmentRow {
   /** Revisão otimista persistida; adapters de produção sempre a carregam. */
   revision?: number;
+  service_boundary?: unknown;
   id: string;
   organization_id: string;
   pointer_id: string;
