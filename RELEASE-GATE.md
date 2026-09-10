@@ -19,7 +19,7 @@ continua pendente porque o daemon Docker não está disponível neste ambiente.
 | `pnpm build` | PASS | Next 16.3.4; 53 páginas/rotas geradas |
 | `pnpm test:db` | BLOCKED_EXTERNAL_INFRA | Docker daemon ausente |
 | `pnpm test:e2e` | BLOCKED_EXTERNAL_INFRA | depende de banco/Supabase local |
-| Actions remota | PENDING | novo commit ainda precisa executar |
+| Actions remota | PENDING | action comum corrigida; retry ainda depende da Actions e do segredo de release |
 
 ## Não executado por escopo ou infraestrutura
 
@@ -27,6 +27,8 @@ continua pendente porque o daemon Docker não está disponível neste ambiente.
   rollback exigem Docker/staging e não foram marcados como PASS.
 - Nenhuma tag ou release foi criada.
 - PRs Dependabot não foram mesclados.
+- O workflow `release` não pode cortar tag neste host sem `RELEASE_APP_ID` e
+  `RELEASE_APP_PRIVATE_KEY`; isso é configuração externa, não foi inventado.
 
 ## Condição de GO
 

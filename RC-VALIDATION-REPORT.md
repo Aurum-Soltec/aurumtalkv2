@@ -45,6 +45,10 @@ até banco/invariantes/RLS e E2E rodarem em infraestrutura Docker/Supabase.
   foram alterados.
 - Runs do commit inicial apresentavam falhas em `e2e`/`perf`/`release`; o novo
   commit precisa gerar a leitura correspondente à RC Closure.
+- No primeiro run do commit final, `ci`/`invariants`/`perf` revelaram a action
+  local `preparar-node` ausente; ela foi restaurada em um follow-up explícito.
+  `release` parou por configuração externa ausente (`RELEASE_APP_ID` e
+  `RELEASE_APP_PRIVATE_KEY`), sem tentativa de fabricar credenciais.
 
 ## Próxima ação
 

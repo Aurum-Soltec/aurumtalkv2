@@ -33,6 +33,11 @@
     "tags_created": 0,
     "releases_created": 0
   },
+  "remote_follow_up": {
+    "missing_shared_action_fixed": true,
+    "release_secret_status": "BLOCKED_EXTERNAL_INFRA",
+    "dependabot_merges": 0
+  },
   "system_vivo": {
     "visible_next_step": true,
     "auditability": "artifacts_and_failure_triage_checked_in",

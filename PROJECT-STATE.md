@@ -24,6 +24,9 @@ Status: **RC_CODE_VALIDATED_INFRA_PENDING**
   disponível neste host (`docker_engine` ausente). Isso não é PASS.
 - A consulta remota encontrou dois PRs abertos do Dependabot (#1 e #2); não
   foram mesclados nem alterados.
+- O primeiro run do novo commit encontrou a action local `preparar-node` ausente;
+  ela foi restaurada no follow-up de CI. O workflow `release` também exige o
+  segredo externo `RELEASE_APP_ID`, que não está configurado neste repositório.
 
 ## Decisões desta RC Closure
 

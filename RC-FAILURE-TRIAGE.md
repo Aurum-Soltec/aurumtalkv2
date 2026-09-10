@@ -49,3 +49,13 @@ suporte; por isso a tabela lista 12 arquivos para 19 falhas.
   autofix amplo numa RC de fechamento.
 - Banco/RLS e E2E: `BLOCKED_EXTERNAL_INFRA`, nunca PASS, até Docker/Supabase
   estarem disponíveis.
+
+## Falhas observadas após o push
+
+- `ci`, `invariants` e `perf`: `REGRESSION_REAL` de packaging do workflow —
+  quatro jobs referenciavam `.github/actions/preparar-node`, mas a action não
+  existia no clone. A action foi restaurada com Node 22, pnpm 9.15.9 e install
+  congelado no follow-up de CI.
+- `release`: `ENVIRONMENT` — `RELEASE_APP_ID`/`RELEASE_APP_PRIVATE_KEY` não
+  estão disponíveis no contexto remoto. Nenhum segredo foi criado ou inferido;
+  retry e corte de tag ficam pendentes dessa configuração do mantenedor.

@@ -1,0 +1,20 @@
+name: Preparar Node
+description: Instala o runtime e as dependências congeladas do projeto
+
+runs:
+  using: composite
+  steps:
+    - name: Configurar pnpm
+      uses: pnpm/action-setup@v6
+      with:
+        version: 9.15.9
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Instalar dependências congeladas
+      shell: bash
+      run: pnpm install --frozen-lockfile
