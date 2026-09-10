@@ -13,7 +13,7 @@ O IMOBI CRM é distribuído em versões publicadas a partir da branch `main`. Co
 
 **Não abra issue pública para vulnerabilidades.**
 
-Use o [relato privado de vulnerabilidades do GitHub](https://github.com/hudsonlcustodio/imobitalk/security/advisories/new) — o relato chega só aos mantenedores, e o histórico fica auditável.
+Use o [relato privado de vulnerabilidades do GitHub](https://github.com/Aurum-Soltec/aurumtalkv2/security/advisories/new) — o relato chega só aos mantenedores, e o histórico fica auditável.
 
 O que esperar:
 

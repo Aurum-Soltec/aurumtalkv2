@@ -15,8 +15,8 @@ set -euo pipefail
 # de qualquer 'cd' (step 2 pode entrar num repo clonado à parte).
 KIT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
-IMOBI_GHCR_OWNER="${IMOBI_GHCR_OWNER:-hudsonlcustodio}"
-IMOBI_REPO_URL="${IMOBI_REPO_URL:-https://github.com/hudsonlcustodio/imobitalk.git}"
+IMOBI_GHCR_OWNER="${IMOBI_GHCR_OWNER:-Aurum-Soltec}"
+IMOBI_REPO_URL="${IMOBI_REPO_URL:-https://github.com/Aurum-Soltec/aurumtalkv2.git}"
 REPO_URL="${REPO_URL:-$IMOBI_REPO_URL}"
 # Uma constante, dois usos (o fim feliz e o fim travado) — e o comecar.sh tem a
 # gêmea. Link repetido à mão vira link divergente na primeira troca.

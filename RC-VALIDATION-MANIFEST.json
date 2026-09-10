@@ -1,0 +1,41 @@
+{
+  "project": "AurumTalk",
+  "repository": "https://github.com/Aurum-Soltec/aurumtalkv2",
+  "branch": "main",
+  "initial_commit": "d8ee83562f09bc57206c0e1e41d5e3090fdd2870",
+  "final_commit": "the commit containing this manifest",
+  "classification": "RC_CODE_VALIDATED_INFRA_PENDING",
+  "unit": {
+    "status": "PASS",
+    "files_passed": 652,
+    "tests_passed": 7088,
+    "expected_failures": 1,
+    "tests_total": 7089
+  },
+  "gates": {
+    "install_frozen": "PASS",
+    "verify_upgrade_v1_17": "PASS_21_OF_21",
+    "typecheck": "PASS",
+    "lint": "PASS_WITH_WARNINGS",
+    "build": "PASS_53_ROUTES",
+    "db": "BLOCKED_EXTERNAL_INFRA",
+    "e2e": "BLOCKED_EXTERNAL_INFRA"
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 313,
+    "potentially_fixable_warnings": 9
+  },
+  "remote_before_push": {
+    "main_commit": "d8ee83562f09bc57206c0e1e41d5e3090fdd2870",
+    "open_dependabot_prs": [1, 2],
+    "dependabot_merges": 0,
+    "tags_created": 0,
+    "releases_created": 0
+  },
+  "system_vivo": {
+    "visible_next_step": true,
+    "auditability": "artifacts_and_failure_triage_checked_in",
+    "human_handoff": "infra_pending_is_explicit"
+  }
+}

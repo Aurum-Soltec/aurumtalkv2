@@ -359,7 +359,7 @@ Checks **obrigatórios** na branch protection da `main` (verificado na configura
 Todos os **cinco** são **obrigatórios** — medido em 2026-08-14 na branch protection:
 
 ```console
-$ gh api repos/hudsonlcustodio/imobitalk/branches/main/protection --jq '.required_status_checks.contexts|join(", ")'
+$ gh api repos/Aurum-Soltec/aurumtalkv2/branches/main/protection --jq '.required_status_checks.contexts|join(", ")'
 verify, build-and-size, invariants, e2e, imagens-ok
 ```
 

@@ -229,7 +229,10 @@ describe("packaging — o artefato que o cliente instala", () => {
     expect(wf, "publish-image.yml não passa APP_VERSION como build-arg").toContain(
       "APP_VERSION=",
     );
-    expect(wf, "publish-image.yml não cria o canal 'stable'").toContain("value=stable");
+    expect(wf, "publish-image.yml não promove o conjunto completo para 'stable'").toContain(
+      "imagetools create",
+    );
+    expect(wf, "publish-image.yml não aponta a promoção para 'stable'").toContain(":stable");
   });
 
   it("nenhum gatilho reconstrói uma tag já publicada", () => {

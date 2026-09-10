@@ -29,6 +29,7 @@ function supabaseEspiao() {
   const chain: any = {
     select: () => chain,
     eq: () => chain,
+    is: () => chain,
     order: () => chain,
     limit: () => chain,
     contains: () => chain,

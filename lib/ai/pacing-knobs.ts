@@ -35,7 +35,6 @@ export const DAILY_LIMIT_BOUNDS = { min: 1, max: 10_000 } as const;
  * O fuso mais adiantado que existe é UTC+14 (Kiritimati). Logo, o maior DIA de
  * calendário em vigor em algum lugar do planeta é o dia UTC de `agora + 14h`.
  */
-const MAIOR_ADIANTAMENTO_MS = 14 * 3_600_000;
 
 /** O dia do calendário (`yyyy-mm-dd`) de um instante, lido em UTC. */
 function diaEmUtc(ms: number): string {
@@ -102,7 +101,7 @@ export function diaDeHojeLocal(agora: Date = new Date()): string {
 export function diaDeclaradoJaComecou(iso: string, agora: Date = new Date()): boolean {
   const instante = Date.parse(iso);
   if (!Number.isFinite(instante)) return false;
-  return diaEmUtc(instante) <= diaEmUtc(agora.getTime() + MAIOR_ADIANTAMENTO_MS);
+  return diaEmUtc(instante) <= diaEmUtc(agora.getTime() + 14 * 3_600_000);
 }
 
 /** Campos editáveis pela tela — null = voltar ao default conservador do engine. */

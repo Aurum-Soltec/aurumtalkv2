@@ -91,7 +91,8 @@ describe("lista de contatos — ordenação e cursor", () => {
         limit: 25,
       },
     );
-    expect(cap.isFilters[0]?.col).toBe("last_activity_at");
+    expect(cap.isFilters.map((f) => f.col)).toContain("last_activity_at");
+    expect(cap.isFilters.map((f) => f.col)).toContain("is_merged_into");
     expect(cap.ltGt[0]).toMatchObject({
       col: "id",
       op: "gt",

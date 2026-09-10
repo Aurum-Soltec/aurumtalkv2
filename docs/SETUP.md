@@ -524,4 +524,4 @@ Bem-vindo ao DeskcommCRM. 🛠️
 
 ---
 
-> **Achou um erro neste guia?** Abra uma [issue](https://github.com/hudsonlcustodio/imobitalk/issues) ou mande um PR — esse doc vive da contribuição da comunidade.
+> **Achou um erro neste guia?** Abra uma [issue](https://github.com/Aurum-Soltec/aurumtalkv2/issues) ou mande um PR — esse doc vive da contribuição da comunidade.

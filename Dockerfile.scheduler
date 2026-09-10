@@ -7,7 +7,7 @@
 # deveria ser offline. Doutrina: docs/doctrine/packaging.md, invariante 1.
 FROM alpine:3.20
 
-LABEL org.opencontainers.image.source="https://github.com/hudsonlcustodio/imobitalk" \
+LABEL org.opencontainers.image.source="https://github.com/Aurum-Soltec/aurumtalkv2" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="IMOBI CRM scheduler"
 

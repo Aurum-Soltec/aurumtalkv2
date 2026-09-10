@@ -199,7 +199,7 @@ export const REGUA_DO_PRODUTO: Regua = {
         chave: "--color-accent-soft",
         fonte: {
           tipo: "literal",
-          hex: "#b78bd1",
+          hex: "#82a077",
           alfa: 0.16,
         },
       },

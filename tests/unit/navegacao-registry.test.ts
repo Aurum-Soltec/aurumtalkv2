@@ -90,9 +90,11 @@ describe("sidebarGroups", () => {
     expect(hrefs).toContain("/app/ai/agents");
   });
 
-  it("promove Funis para o grupo de CRM — o achado que originou esta mudança", () => {
+  it("mantém Etapas do funil no hub de CRM, fora da barra diária", () => {
     const crm = sidebarGroups(true, null).find((g) => g.group.id === "crm");
-    expect(crm?.items.map((i) => i.href)).toContain("/app/settings/tenant/pipelines");
+    expect(crm?.items.map((i) => i.href)).not.toContain("/app/settings/tenant/pipelines");
+    const hub = hubSections("crm", true, null).flatMap((s) => s.items.map((i) => i.href));
+    expect(hub).toContain("/app/settings/tenant/pipelines");
   });
 
   it("omite o grupo inteiro quando o papel não vê nenhum item dele", () => {

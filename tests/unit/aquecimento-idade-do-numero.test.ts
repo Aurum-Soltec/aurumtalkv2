@@ -41,10 +41,12 @@ describe("contrato da API — os campos que faltavam", () => {
   });
 
   it("recusa data no FUTURO — adiantar o aquecimento é o oposto de proteger", () => {
-    const amanha = new Date(Date.now() + 86_400_000).toISOString();
+    // O contrato aceita o dia seguinte quando ele já começou em algum fuso do
+    // planeta (UTC+14). Três dias à frente continua futuro em qualquer fuso.
+    const futuro = new Date(Date.now() + 3 * 86_400_000).toISOString();
     const r = pacingKnobsUpdateSchema.safeParse({
       channel_session_id: SESSAO,
-      number_activated_at: amanha,
+      number_activated_at: futuro,
     });
     expect(r.success).toBe(false);
   });

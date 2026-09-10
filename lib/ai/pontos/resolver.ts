@@ -113,7 +113,6 @@ export interface DecisaoDeBinding {
  */
 export const PONTOS_DO_AGENTE_PUBLICADO: ReadonlySet<string> = new Set([
   "agent_turn",
-  "agent_preview",
   "operator_turn",
 ]);
 
@@ -141,6 +140,7 @@ export const PONTOS_DO_AGENTE_PUBLICADO: ReadonlySet<string> = new Set([
  * sai daqui no mesmo commit.
  */
 export const PONTOS_QUE_HERDAM_DO_AGENTE: ReadonlySet<string> = new Set([
+  "agent_preview",
   "stage_classifier",
   "jailbreak_detect",
   "promise_semantic",

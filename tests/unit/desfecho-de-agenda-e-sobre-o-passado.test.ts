@@ -93,7 +93,15 @@ function clienteCom(startsAt: string, status: string): SupabaseClient {
       },
       insert: () => ({ select: () => ({ single: async () => ({ data: {}, error: null }) }) }),
     }),
-    rpc: async () => ({ data: null, error: null }),
+    rpc: async (nome: string, args: Record<string, unknown>) => {
+      if (nome === "fn_appointment_change") {
+        atualizado = (args.p_patch as Record<string, unknown> | undefined) ?? null;
+      }
+      return {
+        data: { ...linha, ...(atualizado ?? {}) },
+        error: null,
+      };
+    },
   } as unknown as SupabaseClient;
 }
 

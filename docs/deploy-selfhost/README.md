@@ -1,4 +1,4 @@
-# DeskcommCRM self-hosted — instalação em VPS (com agente de IA)
+# AurumTalk self-hosted — instalação em VPS (com agente de IA)
 
 > Sistema operacional de vendas open source com agente SDR de IA integrado
 > (WhatsApp via WAHA) — pra qualquer negócio que vende conversando.
@@ -23,7 +23,7 @@
 ## 1. Clonar e configurar
 
 ```bash
-git clone https://github.com/hudsonlcustodio/imobitalk.git && cd DeskcommCRM
+git clone https://github.com/Aurum-Soltec/aurumtalkv2.git && cd aurumtalkv2
 cp .env.hostgator.example .env   # o template de produção (o .env.example é o de dev)
 ```
 

@@ -12,6 +12,7 @@ import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
 import { loadAuthUser, resolveActiveOrg } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { supportWriteError } from "@/lib/impersonate/support";
 
 export type DisconnectResult =
   | { ok: true }
@@ -20,6 +21,7 @@ export type DisconnectResult =
 export async function disconnectNuvemshop(): Promise<DisconnectResult> {
   const user = await loadAuthUser();
   if (!user) return { ok: false, error: "auth_required" };
+  if (supportWriteError(user.support)) return { ok: false, error: "forbidden" };
 
   const activeOrg = await resolveActiveOrg(user);
   if (!activeOrg) return { ok: false, error: "no_active_org" };

@@ -22,12 +22,11 @@ describe("deriveAgentStatus", () => {
     expect(deriveAgentStatus({ ...base, kind: "mcp_agent", published_version_id: null } as AgentRow)).toBe("draft");
   });
 
-  it("rag_bot legado ATIVO e sem versão é RASCUNHO — precisa de publicação para voltar a atender", () => {
-    // Todos os caminhos de atendimento exigem `published_version_id`. O
-    // `is_active` legado não torna mais uma configuração sem versão executável;
-    // o badge deve orientar recuperação/publicação em vez de anunciar que o
-    // agente está no ar.
-    expect(deriveAgentStatus({ ...base, is_active: true, published_version_id: null })).toBe("draft");
+  it("rag_bot legado ATIVO e sem versão é PUBLICADO — o worker legado ainda o atende", () => {
+    // A régua compartilhada distingue o caminho legado do agente publicado.
+    // `is_active` é a porta que mantém esse agente atendendo; rotulá-lo como
+    // rascunho esconderia da operação quem ainda responde ao cliente.
+    expect(deriveAgentStatus({ ...base, is_active: true, published_version_id: null })).toBe("published");
   });
 
   it("rag_bot legado DESATIVADO e sem versão é RASCUNHO", () => {

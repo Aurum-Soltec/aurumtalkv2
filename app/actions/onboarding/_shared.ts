@@ -6,6 +6,7 @@
  */
 import { loadAuthUser, resolveActiveOrg } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { supportWriteError } from "@/lib/impersonate/support";
 import type { OnboardingState } from "@/lib/schemas/onboarding";
 
 export class OnboardingError extends Error {
@@ -35,6 +36,7 @@ export interface OnboardingCtx {
 export async function requireOnboardingCtx(): Promise<OnboardingCtx> {
   const user = await loadAuthUser();
   if (!user) throw new OnboardingError("auth_required", "Auth required.");
+  if (supportWriteError(user.support)) throw new OnboardingError("forbidden", "Acompanhamento somente leitura.");
   const activeOrg = await resolveActiveOrg(user);
   if (!activeOrg) throw new OnboardingError("no_active_org", "Sem organização ativa.");
   return {

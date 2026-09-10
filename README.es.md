@@ -16,15 +16,15 @@ Las capacidades verificadas incluyen contactos y leads, embudos configurables, i
 
 ## Tecnología
 
-Next.js 16, React 19, TypeScript 6 estricto, Tailwind CSS 3, Supabase/PostgreSQL, Redis, WAHA, Vercel AI SDK, Sentry, Vitest, Playwright y Docker Compose.
+Next.js 16, React 19, TypeScript 6 estricto, Tailwind CSS 4, Supabase/PostgreSQL, Redis, WAHA, Vercel AI SDK, Sentry, Vitest, Playwright y Docker Compose.
 
 ## Instalación para desarrollo
 
 Requisitos: Node.js 22+, pnpm 9.15.9 y un proyecto Supabase/PostgreSQL.
 
 ```bash
-git clone https://github.com/hudsonlcustodio/imobitalk.git
-cd imobitalk
+git clone https://github.com/Aurum-Soltec/aurumtalkv2.git
+cd aurumtalkv2
 corepack enable
 pnpm install --frozen-lockfile
 cp .env.example .env.local

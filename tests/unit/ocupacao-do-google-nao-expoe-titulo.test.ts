@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
  * base a regra é conhecida — mecanismo protege, prosa é intenção.
  *
  * ─── A decisão, e ela é medida ───────────────────────────────────────────────
- * `calendar_external_events.title` EXISTE e nós o gravamos. O que não pode é
+ * `calendar_selected_external_events.title` EXISTE e nós o gravamos. O que não pode é
  * chegar à tela: a agenda conectada é PESSOAL de quem atende e a tela da Agenda
  * é multi-tenant, vista por gestor. "Consulta médica", "terapia", "entrevista de
  * emprego" apareceriam para o chefe.
@@ -55,7 +55,7 @@ function semComentarios(fonte: string): string {
 }
 
 /**
- * As consultas a `calendar_external_events` feitas pela tela da Agenda, com as
+ * As consultas a `calendar_selected_external_events` feitas pela tela da Agenda, com as
  * colunas que cada uma pede.
  */
 function consultasDeEventoExterno(): Array<{ onde: string; colunas: string }> {
@@ -63,7 +63,7 @@ function consultasDeEventoExterno(): Array<{ onde: string; colunas: string }> {
   for (const arquivo of arquivos(TELA_DA_AGENDA)) {
     const fonte = semComentarios(fs.readFileSync(arquivo, "utf8"));
     const rel = path.relative(RAIZ, arquivo);
-    for (const m of fonte.matchAll(/\.from\("calendar_external_events"\)([\s\S]*?);/g)) {
+    for (const m of fonte.matchAll(/\.from\("calendar_selected_external_events"\)([\s\S]*?);/g)) {
       const cadeia = m[1] ?? "";
       const sel = /\.select\(\s*"([^"]*)"/.exec(cadeia);
       out.push({
@@ -83,7 +83,7 @@ describe("a ocupação do Google não leva o nome do evento para a tela", () => 
     const consultas = consultasDeEventoExterno();
     expect(
       consultas.length,
-      "nenhuma consulta a `calendar_external_events` em `app/app/agenda/` — ou a " +
+      "nenhuma consulta a `calendar_selected_external_events` em `app/app/agenda/` — ou a " +
         "ocupação deixou de ser buscada, ou ela mudou de lugar e este gate ficou cego",
     ).toBeGreaterThanOrEqual(1);
   });

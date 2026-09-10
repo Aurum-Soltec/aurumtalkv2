@@ -434,7 +434,7 @@ psql_run() { docker run --rm -i postgres:17-alpine psql "$(url_do_schema)" -v ON
 # `docker-compose.prod.yml`, `.env.hostgator.example` e a matriz de
 # `publish-image.yml` digam o mesmo. Se você é um fork, é lá que está a lista do
 # que trocar junto.
-IMG_NS="${IMG_NS:-ghcr.io/${IMOBI_GHCR_OWNER:-hudsonlcustodio}}"
+IMG_NS="${IMG_NS:-ghcr.io/${IMOBI_GHCR_OWNER:-Aurum-Soltec}}"
 IMG_APP="${IMG_NS}/imobi-crm"
 IMG_WORKER="${IMG_NS}/imobi-worker"
 IMG_SCHEDULER="${IMG_NS}/imobi-scheduler"
@@ -451,7 +451,7 @@ IMG_SCHEDULER="${IMG_NS}/imobi-scheduler"
 # alguém porque não deu para resolver um número de versão seria trocar um
 # problema de previsibilidade por um de disponibilidade.
 ultima_versao_publicada() {
-  local url="${1:-${IMOBI_REPO_URL:-https://github.com/hudsonlcustodio/imobitalk.git}}" ref
+  local url="${1:-${IMOBI_REPO_URL:-https://github.com/Aurum-Soltec/aurumtalkv2.git}}" ref
   [ -n "$url" ] || return 0
   command -v git >/dev/null 2>&1 || return 0
   # `grep -v -- -` descarta PRERELEASE (v1.11.0-rc1, v1.1.1-jmpo.1 — esta última

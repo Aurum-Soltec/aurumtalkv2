@@ -1,4 +1,4 @@
-# AGENTS.md — DeskcommCRM
+# AGENTS.md — AurumTalk
 
 > Contrato para **qualquer** agente de código (Codex, Cursor, Copilot, Amp, Claude Code).
 > Este arquivo é o núcleo portável. A **doutrina completa e não-negociável vive em
@@ -19,7 +19,7 @@ quebra no clone fresco é um bug de produto, não um detalhe de ambiente.
 
 ## Stack (CONFIRMADO em `package.json`)
 
-Next.js 16 (App Router) · React 19 · TypeScript 6 estrito · Tailwind 3 ·
+Next.js 16 (App Router) · React 19 · TypeScript 6 estrito · Tailwind 4 ·
 shadcn/ui · Supabase (Postgres + Auth + Realtime + Storage) · Upstash Redis ·
 Vercel AI Gateway (`@ai-sdk/anthropic|openai|google`) · WAHA Plus (engine NOWEB) ·
 Zod 4 · Vitest 4 · Playwright 1 · Sentry 10.
@@ -95,7 +95,7 @@ desde 2026-08-13.**
 **Os cinco são checks obrigatórios** na branch protection da `main` — medido em 2026-08-14 @ `741c4ec8`:
 
 ```console
-$ gh api repos/hudsonlcustodio/imobitalk/branches/main/protection --jq '.required_status_checks.contexts|join(", ")'
+$ gh api repos/Aurum-Soltec/aurumtalkv2/branches/main/protection --jq '.required_status_checks.contexts|join(", ")'
 verify, build-and-size, invariants, e2e, imagens-ok
 ```
 

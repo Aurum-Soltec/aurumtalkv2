@@ -7,8 +7,8 @@
 
 [Português](README.md) · [English](README.en.md) · [Español](README.es.md)
 
-[![CI](https://github.com/hudsonlcustodio/imobitalk/actions/workflows/ci.yml/badge.svg)](https://github.com/hudsonlcustodio/imobitalk/actions/workflows/ci.yml)
-[![Security](https://github.com/hudsonlcustodio/imobitalk/actions/workflows/security.yml/badge.svg)](https://github.com/hudsonlcustodio/imobitalk/actions/workflows/security.yml)
+[![CI](https://github.com/Aurum-Soltec/aurumtalkv2/actions/workflows/ci.yml/badge.svg)](https://github.com/Aurum-Soltec/aurumtalkv2/actions/workflows/ci.yml)
+[![Security](https://github.com/Aurum-Soltec/aurumtalkv2/actions/workflows/security.yml/badge.svg)](https://github.com/Aurum-Soltec/aurumtalkv2/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-5E2D83.svg)](LICENSE)
 </div>
 
@@ -35,7 +35,7 @@ O projeto é distribuído como código aberto para execução em infraestrutura 
 | Camada | Tecnologia |
 | --- | --- |
 | Aplicação | Next.js 16, React 19 e TypeScript 6 em modo estrito |
-| Interface | Tailwind CSS 3 e shadcn/ui |
+| Interface | Tailwind CSS 4 e shadcn/ui |
 | Dados e autenticação | Supabase: PostgreSQL, Auth, Realtime e Storage |
 | Filas e tarefas | `event_log`, worker e scheduler |
 | Cache e rate limit | Redis com API compatível com Upstash |
@@ -58,8 +58,8 @@ Consulte [ARCHITECTURE.md](ARCHITECTURE.md) para os limites e contratos do siste
 ## Instalação para desenvolvimento
 
 ```bash
-git clone https://github.com/hudsonlcustodio/imobitalk.git
-cd imobitalk
+git clone https://github.com/Aurum-Soltec/aurumtalkv2.git
+cd aurumtalkv2
 corepack enable
 pnpm install --frozen-lockfile
 cp .env.example .env.local

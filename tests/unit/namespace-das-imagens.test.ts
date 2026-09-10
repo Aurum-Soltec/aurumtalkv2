@@ -28,7 +28,7 @@ describe("fork IMOBI publica e consome seus próprios artefatos", () => {
 
   it("o template de produção não aponta para o upstream Deskcomm", () => {
     expect(ENV_EXEMPLO).not.toMatch(/ghcr\.io\/melgarafael/i);
-    expect(ENV_EXEMPLO).toContain("ghcr.io/hudsonlcustodio/imobi-crm:stable");
+    expect(ENV_EXEMPLO).toContain("ghcr.io/Aurum-Soltec/imobi-crm:stable");
   });
 
   it("o kit deriva o namespace do fork e usa os mesmos nomes", () => {

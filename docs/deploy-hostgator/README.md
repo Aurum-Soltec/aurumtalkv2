@@ -142,7 +142,7 @@ Agora escolha um dos dois caminhos:
 1. Conecte no servidor por SSH e **abra o Claude Code lá dentro** (na VPS, não no seu PC).
 2. Escreva pra ele exatamente isto:
 
-   > *"Clone https://github.com/hudsonlcustodio/imobitalk e me instale o DeskcommCRM
+   > *"Clone https://github.com/Aurum-Soltec/aurumtalkv2 e me instale o AurumTalk
    > seguindo o `hostgator-setup-kit/install.sh`. Me pergunte as chaves uma por uma e
    > resolva os erros você mesmo."*
 
@@ -158,8 +158,8 @@ Agora escolha um dos dois caminhos:
 No servidor, baixe o projeto e rode o instalador:
 
 ```bash
-git clone https://github.com/hudsonlcustodio/imobitalk.git
-cd DeskcommCRM
+git clone https://github.com/Aurum-Soltec/aurumtalkv2.git
+cd aurumtalkv2
 bash hostgator-setup-kit/install.sh
 ```
 

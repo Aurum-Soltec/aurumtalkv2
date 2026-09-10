@@ -59,8 +59,16 @@ export async function POST(_req: NextRequest, ctx: RouteCtx): Promise<Response> 
   //
   // Kind entra neste conjunto só DEPOIS de ter motor de enrollment vivo:
   // `manual`/`webhook` (POST enroll + ação de regra), `silence` (silence-sweep),
-  // `stage_change` (gatilho-etapa) e `case_opened` (gatilho-caso).
-  const KINDS_COM_MOTOR = new Set(["manual", "webhook", "silence", "stage_change", "case_opened"]);
+  // `stage_change` (gatilho-etapa), `case_opened` (gatilho-caso) e
+  // `appointment_no_show` (enrollment transacional da agenda).
+  const KINDS_COM_MOTOR = new Set([
+    "manual",
+    "webhook",
+    "silence",
+    "stage_change",
+    "case_opened",
+    "appointment_no_show",
+  ]);
   const trigger = (pointer.trigger_config ?? { kind: "manual" }) as {
     kind?: string;
     params?: { stage_id?: string };

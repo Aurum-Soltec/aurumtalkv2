@@ -73,7 +73,7 @@ worker:
 
 # CERTO — imagem publicada; o build fica ao lado, como escape
 worker:
-  image: ${WORKER_IMAGE:-ghcr.io/hudsonlcustodio/imobitalk-worker:stable}
+  image: ${WORKER_IMAGE:-ghcr.io/Aurum-Soltec/imobi-worker:stable}
   build: { context: ., dockerfile: Dockerfile.worker }
 ```
 
@@ -107,7 +107,7 @@ OCI — no mínimo `source`, `revision`, `version`, `licenses` — e é constru�
   > **Ativado.** `imagens-ok` **é** required check da `main`. Medido em 2026-08-14:
   >
   > ```console
-  > $ gh api repos/hudsonlcustodio/imobitalk/branches/main/protection \
+  > $ gh api repos/Aurum-Soltec/aurumtalkv2/branches/main/protection \
   >     --jq '.required_status_checks.contexts|join(", ")'
   > verify, build-and-size, invariants, e2e, imagens-ok
   > ```
@@ -228,7 +228,7 @@ default que preserva o comportamento anterior**; se ela precisa existir, quem a 
 `GET /api/v1/health` responde a versão real da imagem em execução.
 
 > **Vale a partir da próxima release.** Nenhuma imagem já publicada carrega
-> `APP_VERSION` — medido: `docker run --rm ghcr.io/hudsonlcustodio/imobitalk:1.2.1 node -e
+> `APP_VERSION` — medido: `docker run --rm ghcr.io/Aurum-Soltec/imobi-crm:1.2.1 node -e
 > 'console.log(process.env.APP_VERSION)'` → `undefined`. Todo o parque instalado hoje
 > responde `desconhecido`, que é a resposta honesta e o motivo de o fallback não ser mais
 > um número plausível. O item 9 do checklist de release reprova contra a 1.2.1 de propósito.
@@ -406,18 +406,18 @@ do banco. É o passo que mais trava na estreia de uma imagem nova.
 [ ] 6. O run de publicação ficou verde:
        gh run list --workflow=publish-image.yml --limit 3
 [ ] 7. As TRÊS imagens existem E são públicas nesta versão:
-       for i in deskcommcrm deskcomm-worker deskcomm-scheduler; do
+       for i in imobi-crm imobi-worker imobi-scheduler; do
          echo "$i: $(ghcr_status $i X.Y.Z)"; done      → 200 nas três
        403 em alguma? Torne o pacote público ANTES de seguir
 [ ] 8. A imagem reporta a versão certa:
-       docker run --rm ghcr.io/hudsonlcustodio/imobitalk:X.Y.Z \
+       docker run --rm ghcr.io/Aurum-Soltec/imobi-crm:X.Y.Z \
          node -e 'console.log(process.env.APP_VERSION)'   → X.Y.Z
 [ ] 9. `gh release create vX.Y.Z` com as notas do CHANGELOG
 [ ] 10. SÓ AGORA: `stable` e X.Y.Z são o MESMO digest, nas três imagens:
-        for i in deskcommcrm deskcomm-worker deskcomm-scheduler; do
+        for i in imobi-crm imobi-worker imobi-scheduler; do
           for t in X.Y.Z stable; do
             echo -n "$i:$t "; docker buildx imagetools inspect \
-              ghcr.io/melgarafael/$i:$t --format '{{.Manifest.Digest}}'; done; done
+              ghcr.io/Aurum-Soltec/$i:$t --format '{{.Manifest.Digest}}'; done; done
         → o par de cada imagem tem que bater
         Não bateu? Alguma coisa republicou depois do push da tag. NÃO siga:
         um canal apontando para build diferente da versão é o invariante 3
@@ -462,7 +462,7 @@ parque instalado** percorre, e é o único que a suíte de CI não exercita.
 
 | Camada | Artefato | Garante |
 |---|---|---|
-| CI (mecânico) | `imagens-ok` em `publish-image.yml` | imagem quebrada **reprova o merge** — é required check da `main`. Meça antes de confiar: `gh api repos/hudsonlcustodio/imobitalk/branches/main/protection --jq '.required_status_checks.contexts'` |
+| CI (mecânico) | `imagens-ok` em `publish-image.yml` | imagem quebrada **reprova o merge** — é required check da `main`. Meça antes de confiar: `gh api repos/Aurum-Soltec/aurumtalkv2/branches/main/protection --jq '.required_status_checks.contexts'` |
 | CI (mecânico) | `tests/unit/packaging-artefato-do-cliente.test.ts` | serviço `build:`-only, pin upstream solto, `pull_policy` trocado e versão que mente reprovam |
 | CI (mecânico) | `tests/shell/update-guard.test.sh` | atualização que não pina as três imagens reprova |
 | CI (mecânico) | `hostgator-setup-kit/test-validators.sh` | instalação que nasce em tag móvel reprova |
@@ -477,7 +477,7 @@ parque instalado** percorre, e é o único que a suíte de CI não exercita.
 **2026-08-13 — o namespace fica em `melgarafael`.** Uma consultoria externa recomendou criar
 uma org `deskcommcrm` e migrar, sob a premissa de que o compose apontava para uma org
 desvinculada do repo. A premissa era falsa: o compose sempre apontou para
-`ghcr.io/hudsonlcustodio/imobitalk`, que é o que o CI publica e o que está gravado no `.env` de
+`ghcr.io/Aurum-Soltec/imobi-crm`, que é o que o CI publica e o que está gravado no `.env` de
 todo cliente instalado. A string `deskcommcrm/deskcommcrm` existia num único lugar — uma URL
 de `git clone` em `docs/deploy-selfhost/README.md`, que retornava 404. O conserto proporcional
 ao defeito foi essa linha. Racional completo no ADR.

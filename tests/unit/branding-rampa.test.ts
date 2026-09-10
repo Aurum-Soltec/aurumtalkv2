@@ -32,7 +32,8 @@ const CSS = fs.readFileSync(path.join(RAIZ, "app/globals.css"), "utf8");
  * este teste — que é exatamente o aviso que se quer.
  */
 function stopsSageDoCss(): string[] {
-  const raiz = CSS.slice(CSS.indexOf(":root"), CSS.indexOf('[data-theme="dark"]'));
+  const inicioEscuro = CSS.indexOf('\n[data-theme="dark"] {');
+  const raiz = CSS.slice(CSS.indexOf(":root"), inicioEscuro === -1 ? undefined : inicioEscuro);
   return GRAUS.map((g) => {
     const m = new RegExp(`--color-accent-${g}:\\s*(#[0-9a-f]{6})`, "i").exec(raiz);
     if (!m?.[1]) throw new Error(`não achei --color-accent-${g} no :root do globals.css`);

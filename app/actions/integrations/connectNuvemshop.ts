@@ -14,7 +14,7 @@ import { loadAuthUser, resolveActiveOrg } from "@/lib/auth/server";
 import { buildAuthorizeUrl } from "@/lib/nuvemshop/oauth";
 import { getConfig } from "@/lib/nuvemshop/config";
 import { issueState } from "@/lib/nuvemshop/state";
-import { authenticatedSessionId } from "@/lib/impersonate/support";
+import { authenticatedSessionId, supportWriteError } from "@/lib/impersonate/support";
 
 export type ConnectResult =
   | { ok: false; error: "auth_required" | "no_active_org" | "forbidden" | "not_configured" };
@@ -22,6 +22,7 @@ export type ConnectResult =
 export async function connectNuvemshop(): Promise<ConnectResult> {
   const user = await loadAuthUser();
   if (!user) return { ok: false, error: "auth_required" };
+  if (supportWriteError(user.support)) return { ok: false, error: "forbidden" };
 
   const activeOrg = await resolveActiveOrg(user);
   if (!activeOrg) return { ok: false, error: "no_active_org" };

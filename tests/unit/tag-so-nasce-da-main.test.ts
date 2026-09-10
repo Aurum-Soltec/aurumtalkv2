@@ -75,7 +75,7 @@ describe("a tag nasce no CI, e nunca do GITHUB_TOKEN", () => {
 
   it("o corte da tag prova que as imagens saíram — a falha aqui é silenciosa por natureza", () => {
     const t = job(release, "cortar-tag");
-    expect(t).toContain("ghcr_status");
+    expect(t).toContain("ghcr_digest");
     for (const img of ["imobi-crm", "imobi-worker", "imobi-scheduler"]) {
       expect(t, `a conferência não cobre ${img}`).toContain(img);
     }
@@ -91,10 +91,11 @@ describe("a tag nasce no CI, e nunca do GITHUB_TOKEN", () => {
     // antes e não há depois — e um PR comum não a produz: ele ACRESCENTA
     // fragmento, nunca esvazia o diretório.
     const t = job(release, "cortar-tag");
-    expect(t).toMatch(/git ls-tree[^\n]*HEAD\^[^\n]*\.changes\//);
     expect(t).toMatch(/git ls-tree[^\n]*HEAD[^\n]*\.changes\//);
-    // O ramo que RECUSA precisa existir e cobrir os dois lados da assinatura.
-    expect(t).toMatch(/antes[^\n]*-eq 0[^\n]*depois[^\n]*-ne 0/);
+    expect(t).toMatch(/git ls-tree[^\n]*HEAD[^\n]*\.changes\//);
+    // O ramo que RECUSA precisa existir e cobrir o caso sem remoções.
+    expect(t).toMatch(/removidos=\$\(git diff --diff-filter=D --name-only HEAD\^ HEAD/);
+    expect(t).toMatch(/removidos.*-eq 0/);
   });
 
   it("a tag só é criada em push na main, nunca num dispatch de branch qualquer", () => {

@@ -59,14 +59,14 @@ describe("Sidebar agrupado", () => {
     expect(titulos).toEqual(["Atendimento", "CRM", "Agente de IA", "Canais", "Análise"]);
   });
 
-  it("leva às Etapas do funil sem passar por Configurações", () => {
+  it("oferece Etapas do funil pelo hub de CRM, sem rebaixar a tela para Configurações", () => {
     comoPapel("admin");
     render(<Sidebar collapsed={false} />);
-    // O rótulo mudou: "Funis" passou a ser a LISTA (/app/kanban) e esta tela,
-    // que configura as colunas, virou "Etapas do funil". Antes as duas
-    // disputavam o mesmo nome no mesmo grupo do menu.
-    const etapas = screen.getByRole("link", { name: "Etapas do funil" });
-    expect(etapas).toHaveAttribute("href", "/app/settings/tenant/pipelines");
+    expect(screen.queryByRole("link", { name: "Etapas do funil" })).toBeNull();
+    expect(screen.getByRole("link", { name: /Ver tudo em CRM/ })).toHaveAttribute(
+      "href",
+      "/app/crm",
+    );
   });
 
   it("e os dois itens de funil não disputam o mesmo nome", () => {
@@ -82,7 +82,7 @@ describe("Sidebar agrupado", () => {
     // usa, mas não faz parte da navegação visível deste produto. Audit Log, ao
     // contrário, precisa continuar alcançável pelo menu.
     expect(screen.queryByRole("link", { name: /Nuvemshop/ })).toBeNull();
-    expect(screen.getByRole("link", { name: /Audit Log/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Ver tudo em Análise/ })).toBeTruthy();
   });
 
   it("Configurações fica no rodapé, nunca dependendo de scroll", () => {

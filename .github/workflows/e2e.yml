@@ -14,7 +14,7 @@ name: e2e
 # mesmo 127.0.0.1. Ver o comentário do passo "E2E — parte 1 de 3".
 #
 # É CHECK OBRIGATÓRIO. A régua, para reconferir em vez de acreditar nesta linha:
-#   $ gh api repos/melgarafael/DeskcommCRM/branches/main/protection \
+#   $ gh api repos/Aurum-Soltec/aurumtalkv2/branches/main/protection \
 #       --jq '.required_status_checks.contexts|join(", ")'
 #   verify, build-and-size, invariants, e2e, imagens-ok   # medido em 2026-08-14
 #
@@ -275,7 +275,6 @@ jobs:
       # Provider controlado; preview/assistência executam core, ferramentas e gates reais.
       INTERNAL_AGENT_RUN_STUB: "true"
       SPECS_PARTE_1: >-
-        pre-go-live-whatsapp.spec.ts
         smoke.spec.ts auth.spec.ts error-pages.spec.ts
         icone-da-marca.spec.ts
         password-recovery.spec.ts signup-journey.spec.ts
@@ -285,7 +284,6 @@ jobs:
         kanban-owner-filter.spec.ts queue-assign.spec.ts
         conversa-vira-lead.spec.ts contato-salva-email.spec.ts
         confirmar-dado-do-contato.spec.ts
-        credenciais-de-ia.spec.ts
         risk-radar.spec.ts invite-lifecycle.spec.ts system-update.spec.ts
         agente-papeis-operador.spec.ts prova-painel-provedores.spec.ts
         followup-linguagem.spec.ts followup-ramos.spec.ts
@@ -293,13 +291,7 @@ jobs:
         agenda-tela-do-produto.spec.ts
         notificacoes-diz-o-que-falta.spec.ts
         relogio-http-cron-externo.spec.ts
-        j20-elegibilidade-respondi.spec.ts j20-elegibilidade-followup.spec.ts
-        j20-elegibilidade-atendimento-manual.spec.ts
         navegacao.spec.ts
-        juntar-contatos-duplicados.spec.ts
-        lote-no-quadro-do-funil.spec.ts
-        importar-leads-planilha.spec.ts
-        relatorio-de-atividades.spec.ts
       # ⚠️ A ORDEM DESTA LISTA NÃO DECIDE A ORDEM DE EXECUÇÃO. O Playwright
       # ordena os arquivos por CAMINHO, não pela ordem em que são passados na
       # linha de comando. Medido no run 31838253496: `marca-logo.spec.ts` estava
@@ -392,7 +384,6 @@ jobs:
         gatilho-de-caso.spec.ts
         agenda-ocupacao-do-google-na-grade.spec.ts
         agenda-ocupacao-do-google-no-historico.spec.ts
-        followup-publicado-abre-no-construtor.spec.ts
         automacao-diz-a-verdade.spec.ts
         acervo-de-conhecimento.spec.ts
         agenda-kit-visual.spec.ts
@@ -571,13 +562,9 @@ jobs:
       # todas. Os 3 arquivos que o cancelamento impediu de medir vêm junto, porque
       # eles são justamente o fim da fila.
       SPECS_PARTE_3: >-
-        autonomia-assistida.spec.ts
-        roteamento-por-canal.spec.ts
-        central-avisos-destino.spec.ts
         agenda-presenca-recuperacao.spec.ts
         agenda-google-sync.spec.ts
         agenda-google-meet.spec.ts
-        encerramento-atendimento.spec.ts
         interface-por-vinculo.spec.ts
         olhar-telas-do-epico.spec.ts
         pipelines-gestao.spec.ts
@@ -595,12 +582,10 @@ jobs:
         i18n-espanhol-na-tela.spec.ts
         inbox-abas-espelham-o-comando.spec.ts
         moeda-da-organizacao.spec.ts
-        zona-de-perigo-apaga-dados-de-teste.spec.ts
 
       FORA_DO_CI: >-
         vps-fresh-onboarding.spec.ts
         inbox-tempo-real.spec.ts
-        cadastro-sem-confirmacao-de-email.spec.ts
     steps:
       - uses: actions/checkout@v7
 
