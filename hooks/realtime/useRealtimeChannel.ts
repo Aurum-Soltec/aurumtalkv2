@@ -3,6 +3,21 @@ import { useEffect, useId, useRef, useState, type RefObject } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
+// setAuth usa gerações: chamadas simultâneas invalidam as anteriores. Todos
+// os canais do mesmo client precisam aguardar A MESMA resolução inicial.
+const autenticacoes = new WeakMap<object, Promise<void>>();
+async function autenticar(supabase: ReturnType<typeof createClient>): Promise<void> {
+  let pending = autenticacoes.get(supabase);
+  if (!pending) {
+    const created: Promise<void> = supabase.realtime.setAuth().then(() => {
+      if (!supabase.realtime.accessTokenValue) throw new Error("realtime_auth_unavailable");
+    }).finally(() => autenticacoes.delete(supabase));
+    autenticacoes.set(supabase, created);
+    pending = created;
+  }
+  return pending;
+}
+
 export type RealtimeStatus =
   | "connecting"
   | "subscribed"
@@ -140,7 +155,7 @@ export function useRealtimeChannel(opts: UseRealtimeChannelOpts): {
       // phx_join antes da primeira resolução assíncrona dela. O trace do CI
       // mostrou join sem access_token seguido de access_token tarde demais.
       try {
-        await supabase.realtime.setAuth();
+        await autenticar(supabase);
       } catch {
         if (cancelado) return;
         setStatus("channel_error");

@@ -160,6 +160,7 @@ test.describe("degradação silenciosa do tempo real", () => {
 
     const marca = `CERCA${Date.now() % 100000}`;
     bloquearEntregas = true;
+    try {
     await admin.from("crm_leads").update({ title: `${lead.title} ${marca}` }).eq("id", lead.id);
     await expect.poll(() => engolidos, { timeout: 10_000 }).toBeGreaterThan(0);
 
@@ -176,7 +177,6 @@ test.describe("degradação silenciosa do tempo real", () => {
     // O contrato do refetch de segurança é CURAR e AVISAR (intervalo de 45s),
     // não manter a tela velha. Antes dele a marca não veio pelo socket.
     await expect(page.locator("body")).not.toContainText(marca);
-    try {
       await expect(page.locator("body")).toContainText(marca, { timeout: 55_000 });
       await expect(page.locator("body")).toContainText(AVISO);
     } finally {

@@ -212,9 +212,7 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await other.goto("/app/team");
     await expect(other.getByRole("row").filter({ hasText: emails[2] }).getByText("Personalizada", { exact: true })).toBeVisible();
   } finally {
-    await memberContext.close();
-    await otherContext.close();
-    await guestContext.close();
+    await Promise.allSettled([memberContext.close(), otherContext.close(), guestContext.close()]);
     for (const id of orgs) await db.from("organizations").delete().eq("id", id);
     for (const id of users) await db.auth.admin.deleteUser(id);
   }

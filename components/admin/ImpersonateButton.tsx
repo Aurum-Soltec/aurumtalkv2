@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/i18n/useT";
+import { notifySupportTransition } from "@/components/app/ImpersonateBanner";
 
 interface ImpersonateButtonProps {
   organizationId: string;
@@ -43,13 +44,18 @@ export function ImpersonateButton({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [readonly, setReadonly] = useState(false);
 
   async function handleConfirm() {
     setBusy(true);
     try {
       const res = await fetch(
         `/api/v1/admin/tenants/${organizationId}/impersonate`,
-        { method: "POST", headers: { "Content-Type": "application/json" } },
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_mode: readonly ? "support_readonly" : "full" }),
+        },
       );
       const json: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -62,14 +68,14 @@ export function ImpersonateButton({
         (json as { data?: { redirect_url?: string } })?.data?.redirect_url ??
         "/app/inbox";
       setOpen(false);
+      notifySupportTransition();
       // Hard navigation so the new cookie is sent on the next request and the
       // server layout can read it to render the banner.
       window.location.assign(redirectUrl);
       // Fallback (in case assign is intercepted in tests).
       router.push(redirectUrl);
-    } catch (err) {
+    } catch {
       toast.error(t("Erro de rede ao iniciar o acompanhamento"));
-      console.error("[impersonate] start error", err);
     } finally {
       setBusy(false);
     }
@@ -101,6 +107,15 @@ export function ImpersonateButton({
             {t("Toda ação será registrada como uma ação de suporte.")} {t("A sessão expira em 1 hora. Confirma?")}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={readonly}
+            onChange={(event) => setReadonly(event.target.checked)}
+            disabled={busy}
+          />
+          {t("Somente leitura")}
+        </label>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>{t("Cancelar")}</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm} disabled={busy}>

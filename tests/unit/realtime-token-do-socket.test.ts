@@ -73,7 +73,7 @@ describe("o token que o socket do Realtime usa", () => {
     // uma segunda fonte. O join não pode disputar com a resolução inicial.
     const hook = soCodigo(readFileSync("hooks/realtime/useRealtimeChannel.ts", "utf8"));
     // Sem argumento: aguarda a callback canônica, não injeta outra fonte.
-    expect(hook).toMatch(/await supabase\.realtime\.setAuth\(\)/);
+    expect(hook).toMatch(/supabase\.realtime\.setAuth\(\)/);
     expect(hook).not.toMatch(/\.setAuth\(\s*[^)\s]/);
     expect(hook, "o hook voltou a buscar token por conta própria").not.toMatch(
       /realtime-token/,

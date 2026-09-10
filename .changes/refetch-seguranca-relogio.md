@@ -12,3 +12,7 @@ Os canais aguardam a autenticação antes da assinatura inicial. O envio imediat
 de acompanhamentos compartilha o registro de entrega do worker e conclui o passo
 e seu histórico em uma única operação, permitindo recuperar uma falha sem repetir
 a mensagem já aceita pelo canal.
+
+A entrada do aplicativo respeita os destinos configurados para o membro.
+O início do suporte oferece o modo somente leitura e avisa as outras abas
+para que atualizem o contexto da organização acompanhada.
