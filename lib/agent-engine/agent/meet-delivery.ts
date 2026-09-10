@@ -15,9 +15,10 @@ import {
   MeetingDeliveryBlockedError,
 } from "@/lib/agenda/meet-delivery";
 import { meetVideoUrl } from "@/lib/agenda/google/meet";
-import { tagDeIdioma } from "@/lib/i18n/datas";
-import { normalizarIdioma, type Idioma } from "@/lib/i18n/idiomas";
-import { traduzir } from "@/lib/i18n/dicionario";
+import { normalizarIdioma } from "@/lib/i18n/idiomas";
+import { meetingDeliveryBody } from "./meet-delivery-body";
+
+export { meetingDeliveryBody } from "./meet-delivery-body";
 
 export function createMeetDeliveryHandler(deps: {
   crmCfg: CrmEdgeConfig;
@@ -53,7 +54,7 @@ export function createMeetDeliveryHandler(deps: {
           await settle("sent");
           return;
         }
-        await assertMeetingDeliveryPg(pool, context);
+        const deliveryPolicy = await assertMeetingDeliveryPg(pool, context);
         const boundary = parseServiceBoundary(job.payload.service_boundary)!;
         const { rows } = await pool.query<
           LgpdContactFields & {
@@ -99,6 +100,7 @@ export function createMeetDeliveryHandler(deps: {
           leadId: job.contact_id!,
           jobId: job.id,
           meetingDelivery: context,
+          ignoreForceHuman: deliveryPolicy.humanCommand,
           channelSessionId: row.channel_session_id,
           crmDailyLimit: row.daily_message_limit,
           body: meetingDeliveryBody(
@@ -163,18 +165,4 @@ export function createMeetDeliveryHandler(deps: {
       );
     }
   };
-}
-
-export function meetingDeliveryBody(
-  startsAt: string,
-  timeZone: string,
-  url: string,
-  idioma: Idioma,
-): string {
-  const when = new Intl.DateTimeFormat(tagDeIdioma(idioma), {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone,
-  }).format(new Date(startsAt));
-  return `${traduzir("Sua reunião está marcada para", idioma)} ${when} (${timeZone}). ${traduzir("Link do Google Meet:", idioma)} ${url}`;
 }

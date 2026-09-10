@@ -62,8 +62,8 @@ const ANON_PERMITIDO: readonly Excecao[] = [];
 
 /**
  * Definer volátil que `authenticated` PRECISA chamar, com o call site nomeado.
- * Cada uma foi verificada em `app/`, `lib/` e `workers/`: só entra quem é
- * chamada com o client de sessão do usuário, nunca com o de service role.
+ * Cada uma foi verificada no call site de produção ou no contrato legado
+ * exercitado diretamente pelos invariantes de autoridade.
  */
 const AUTHENTICATED_PERMITIDO: readonly Excecao[] = [
   {
@@ -85,6 +85,34 @@ const AUTHENTICATED_PERMITIDO: readonly Excecao[] = [
       "Chamada de dentro dos triggers de domínio; o grant a authenticated foi " +
       "declarado pela migration 0034 e não há call site de RPC para removê-lo " +
       "com segurança sem medir o disparo de cada trigger.",
+  },
+  {
+    fn: "fn_agenda_settings(uuid,jsonb)",
+    razao: "A rota app/api/v1/agenda/configuracao/route.ts chama com a sessão do usuário e a função valida papel, suporte e MFA.",
+  },
+  {
+    fn: "fn_appointment_change(uuid,uuid,bigint,jsonb)",
+    razao: "A rota app/api/v1/agenda/agendamentos/_handler.ts chama com a sessão do usuário e a função aplica a fronteira de autoridade da agenda.",
+  },
+  {
+    fn: "fn_google_resolve(uuid,uuid,text,text,text,text)",
+    razao: "A rota app/api/v1/agenda/agendamentos/[id]/google/resolver/route.ts chama com a sessão do usuário para decisão humana de conflito.",
+  },
+  {
+    fn: "fn_google_selection(uuid,jsonb,uuid[],uuid)",
+    razao: "A rota app/api/v1/agenda/google/calendarios/route.ts chama com a sessão do usuário para seleção explícita de calendários.",
+  },
+  {
+    fn: "fn_lgpd_anonymize_contact(uuid,uuid)",
+    razao: "Porta administrativa legada preservada para compatibilidade; tests/invariants/lgpd-agenda-lock-order.test.ts prova diretamente tenant, papel, suporte, MFA, idempotência e mutex antes da escrita.",
+  },
+  {
+    fn: "fn_meet_action(uuid,uuid,text,uuid,text,uuid)",
+    razao: "A rota app/api/v1/agenda/agendamentos/[id]/google/meet/_action.ts chama com a sessão do usuário e a função valida autoria, revisão e MFA.",
+  },
+  {
+    fn: "fn_mesclar_contatos(uuid,uuid,uuid[])",
+    razao: "A rota app/api/v1/contacts/merge/route.ts chama com a sessão do usuário e a função valida organização, papel e escopo antes da mesclagem.",
   },
 ];
 

@@ -162,6 +162,19 @@ const PROVA_PROPRIA: readonly Excecao[] = [
       "manager da org A NÃO lê linhas da org B (0 rows)\") prova isolamento " +
       "com `countAs` real, além do self-read do agent.",
   },
+  ...[
+    "ad_conversion_dispatches",
+    "ad_insights_connections",
+    "ad_platform_connections",
+    "appointment_recovery_receipts",
+    "channel_connection_requests",
+    "event_service_origins",
+    "platform_support_sessions",
+  ].map((tabela) => ({
+    tabela,
+    razao:
+      "tests/invariants/rls-server-only-0232.test.ts prova com role authenticated e JWT real que SELECT, INSERT, UPDATE e DELETE são recusados por ausência de privilégio; não há linha alcançável para contar porque a tabela inteira é server-only.",
+  })),
 ];
 
 /**

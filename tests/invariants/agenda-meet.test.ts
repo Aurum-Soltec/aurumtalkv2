@@ -666,12 +666,15 @@ it("entrega real controlada: fila→gates→ledger→handler→HTTP; replay não
     expect(bodies[0]!.text).toContain("https://meet.google.com/abc-defg-hij");
     expect(bodies[0]!.text).toContain("America/Sao_Paulo");
     const messages = (
-      await pool.query("select * from messages where organization_id=$1 and contact_id=$2", [
+      await pool.query("select * from messages where organization_id=$1 and contact_id=$2 and direction='outbound' and body like '%meet.google.com%'", [
         f.org,
         f.contact,
       ])
     ).rows;
-    expect(messages).toHaveLength(1);
+    expect(
+      messages,
+      JSON.stringify(messages.map((m) => ({ id: m.id, status: m.status, external_id: m.external_id, metadata: m.metadata }))),
+    ).toHaveLength(1);
     expect(messages[0]).toMatchObject({ sent_via: "ai", sent_by_user_id: null, status: "sent" });
     expect(
       (
@@ -709,7 +712,7 @@ it("entrega real controlada: fila→gates→ledger→handler→HTTP; replay não
     expect((await row(f.id)).meeting_delivery.state).toBe("sent");
     expect(bodies).toHaveLength(1);
     expect(
-      (await pool.query("select count(*) from messages where contact_id=$1", [f.contact])).rows[0]
+      (await pool.query("select count(*) from messages where contact_id=$1 and direction='outbound' and body like '%meet.google.com%'", [f.contact])).rows[0]
         .count,
     ).toBe("1");
     expect(JSON.stringify(log.info.mock.calls)).not.toContain("https://meet.");

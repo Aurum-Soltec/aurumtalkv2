@@ -137,6 +137,11 @@ export interface OutboundEnvelope extends ChannelTenantScope {
    * `undefined` = envio solto, que é o caso comum.
    */
   replyToExternalId?: string | null;
+  /**
+   * Última cerca antes do efeito irreversível. O adapter chama depois de
+   * resolver o destinatário e imediatamente antes do POST ao provider.
+   */
+  beforeExternalEffect?: () => Promise<void>;
 }
 
 /**

@@ -858,6 +858,8 @@ export interface RunBeforeSendArgs {
   agenda?: { active: boolean; toolCalledThisTurn: boolean };
   approvedReply?: ApprovedReplyContext;
   meetingDelivery?: MeetingDeliveryContext;
+  /** Comando humano explícito pode atravessar force_human, nunca is_blocked. */
+  ignoreForceHuman?: boolean;
   /**
    * Enviado SÓ se TODOS os gates passarem — ChannelAdapter (própria tx/idempotência). Recebe o
    * corpo FINAL (o disclosureGate F4-05 pode emendá-lo via `amendBody`): quem monta o send DEVE
@@ -884,7 +886,9 @@ export async function runBeforeSend(args: RunBeforeSendArgs): Promise<BeforeSend
     // Estado confiável carregado SOB o lock (os contadores de cap/janela de copies
     // são racy — precisam ver o que o worker anterior já efetivou).
     const provider = await loadChannelProvider(client, args.tenantId, args.channelSessionId);
-    const optedOut = args.optedOutThisTurn || (await readStopFlags(client, args.tenantId, args.leadId));
+    const optedOut =
+      args.optedOutThisTurn ||
+      (await readStopFlags(client, args.tenantId, args.leadId, args.ignoreForceHuman === true));
     const pacingCfg = await loadChannelKnobs(client, args.tenantId, args.channelSessionId, args.log);
     const pacingState = await loadPacingState(client, args.tenantId, args.channelSessionId, {
       now: args.now,
@@ -1087,10 +1091,17 @@ export async function loadChannelProvider(
   return provider === undefined ? DEFAULT_CHANNEL_PROVIDER : (provider as ChannelProvider);
 }
 
-async function readStopFlags(db: Queryable, organizationId: string, contactId: string): Promise<boolean> {
+async function readStopFlags(
+  db: Queryable,
+  organizationId: string,
+  contactId: string,
+  ignoreForceHuman = false,
+): Promise<boolean> {
+  // Regra canônica sem exceção: `is_blocked or force_human`. Um comando humano
+  // explícito atravessa somente `force_human`; bloqueio do contato segue absoluto.
   const { rows } = await db.query<{ stopped: boolean }>(
-    'select (is_blocked or force_human) as stopped from contacts where organization_id = $1 and id = $2',
-    [organizationId, contactId],
+    'select (is_blocked or (force_human and not $3::boolean)) as stopped from contacts where organization_id = $1 and id = $2',
+    [organizationId, contactId, ignoreForceHuman],
   );
   return rows[0]?.stopped === true;
 }

@@ -105,7 +105,7 @@ it("spinning compara texto minimizado sem conservar credencial da sala", async (
 });
 
 it("mensagem determinística usa texto e data do destinatário", async () => {
-  const { meetingDeliveryBody } = await import("@/lib/agent-engine/agent/meet-delivery");
+  const { meetingDeliveryBody } = await import("@/lib/agent-engine/agent/meet-delivery-body");
   const at = "2030-01-02T13:05:00Z",
     url = "https://meet.google.com/abc-defg-hij";
   expect(meetingDeliveryBody(at, "UTC", url, "es")).toBe(

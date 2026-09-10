@@ -31,6 +31,7 @@ import type { ListMessagesQuery, SendMessageInput } from "@/lib/schemas";
 import { sendTemplateForSession } from "@/lib/channels/meta/send-template-for-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Message } from "@/lib/types/messaging";
+import { guardServiceEffect } from "@/lib/atendimento/fronteira-server";
 
 type SB = SupabaseClient;
 
@@ -443,6 +444,7 @@ export async function sendMessageHandler(
   }
 
   const insertRow = {
+    ...(ctx.internalMessageId ? { id: ctx.internalMessageId } : {}),
     organization_id: c.organization_id,
     // Guardado mesmo quando o canal não sabe citar: o fio existe no NOSSO
     // histórico de qualquer jeito, e é o que a tela desenha.
@@ -467,11 +469,18 @@ export async function sendMessageHandler(
     },
   };
 
-  const { data: created, error: insErr } = await supabase
-    .from("messages")
-    .insert(insertRow)
-    .select(MSG_COLS)
-    .single();
+  const existing = ctx.internalMessageId
+    ? await supabase
+        .from("messages")
+        .select(MSG_COLS)
+        .eq("id", ctx.internalMessageId)
+        .eq("organization_id", c.organization_id)
+        .maybeSingle()
+    : { data: null, error: null };
+  const inserted = existing.data
+    ? existing
+    : await supabase.from("messages").insert(insertRow).select(MSG_COLS).single();
+  const { data: created, error: insErr } = inserted;
 
   if (insErr || !created) {
     throw new ApiError(
@@ -634,6 +643,7 @@ export async function sendMessageHandler(
           // O id que a PLATAFORMA conhece, lido da linha citada agora — não uma
           // cópia guardada no envio, que poderia divergir da linha.
           replyToExternalId: citada?.external_id ?? null,
+          beforeExternalEffect: guardServiceEffect,
         }));
       } else if (input.type === "contact") {
         const sc = outboundMetadata.shared_contact as
@@ -662,6 +672,7 @@ export async function sendMessageHandler(
             whatsappId: phoneToWhatsappId(telefone),
             vcard: buildVcard(nome, telefone),
           },
+          beforeExternalEffect: guardServiceEffect,
         }));
       } else {
         ({ externalId } = await adapter.send({
@@ -672,6 +683,7 @@ export async function sendMessageHandler(
           kind: input.type,
           body: input.body ?? "",
           replyToExternalId: citada?.external_id ?? null,
+          beforeExternalEffect: guardServiceEffect,
         }));
       }
       await removerEcoDoProprioEnvio(

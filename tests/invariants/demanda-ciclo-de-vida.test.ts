@@ -14,9 +14,9 @@ import { GOV_ORG, GOV_SESSION, lastLine, seedGov, sql } from "./gov-helpers";
  *   1. inbound de contato sem demanda aberta ABRE   → a garantia de cobertura;
  *   2. segunda mensagem NÃO duplica                 → senão cada mensagem
  *      viraria uma demanda e o denominador do índice explodiria;
- *   3. conversa encerrada FECHA a demanda           → sem isso o denominador
- *      (que conta fechadas) ficaria vazio para sempre, em silêncio;
- *   4. mensagem depois do fechamento abre OUTRA     → N demandas por conversa
+ *   3. status terminal NÃO inventa desfecho          → fechamento é explícito;
+ *   4. desfecho explícito fecha a demanda            → decisão auditável;
+ *   5. mensagem depois do fechamento abre OUTRA      → N demandas por conversa
  *      ao longo do tempo, que é o modelo da 0119;
  *   5. outbound NÃO abre                            → só o cliente traz demanda.
  *
@@ -87,20 +87,25 @@ describe("demanda nasce e morre no ponto de entrada", () => {
     expect(contaDemandas()).toBe(1);
   });
 
-  it("3. encerrar a conversa FECHA a demanda, com desfecho", () => {
+  it("3. encerrar a conversa NÃO inventa o desfecho da demanda", () => {
     sql(`update public.conversations set status = 'resolved' where id = '${CV}';`);
-    expect(contaDemandas("and fechada_em is not null")).toBe(1);
-    expect(lastLine(sql(`select desfecho from public.demandas where contact_id = '${CT}';`)))
-      .toBe("resolvida");
+    expect(contaDemandas("and fechada_em is null")).toBe(1);
   });
 
-  it("4. mensagem DEPOIS do fechamento abre uma demanda NOVA", () => {
+  it("4. o desfecho explícito FECHA a demanda", () => {
+    const demanda = lastLine(sql(`select id from public.demandas where contact_id = '${CT}' and fechada_em is null;`));
+    sql(`select public.fn_demanda_encerrar('${GOV_ORG}','${demanda}',1,'resolvida',null);`);
+    expect(contaDemandas("and fechada_em is not null")).toBe(1);
+    expect(lastLine(sql(`select desfecho from public.demandas where id = '${demanda}';`))).toBe("resolvida");
+  });
+
+  it("5. mensagem DEPOIS do fechamento abre uma demanda NOVA", () => {
     inbound("voltei com outro problema");
     expect(contaDemandas()).toBe(2);
     expect(contaDemandas("and fechada_em is null")).toBe(1);
   });
 
-  it("5. mensagem NOSSA nao abre demanda — so o cliente traz demanda", () => {
+  it("6. mensagem NOSSA nao abre demanda — so o cliente traz demanda", () => {
     // A demanda aberta precisa ser FECHADA antes: com uma aberta, o trigger não
     // criaria nada de qualquer jeito e o teste passaria pela razão errada.
     // Medido: sabotar o guard de `direction` NÃO reprovava esta asserção até

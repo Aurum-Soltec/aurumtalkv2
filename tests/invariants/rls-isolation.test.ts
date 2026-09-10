@@ -99,6 +99,10 @@ beforeAll(() => {
       v_conv uuid;
       v_pipe uuid;
       v_stage uuid;
+      v_agent uuid;
+      v_version uuid;
+      v_policy uuid;
+      v_user uuid;
     begin
       foreach v_org in array array['${ORG_A}'::uuid, '${ORG_B}'::uuid] loop
         select id into v_sess from public.channel_sessions where organization_id = v_org limit 1;
@@ -139,6 +143,39 @@ beforeAll(() => {
         if not exists (select 1 from public.crm_leads where organization_id = v_org) then
           insert into public.crm_leads (organization_id, pipeline_id, stage_id, title)
             values (v_org, v_pipe, v_stage, 'RLS invariant lead');
+        end if;
+
+        if not exists(select 1 from public.catalog_products where organization_id=v_org) then
+          insert into public.catalog_products(organization_id,codigo,nome,preco_cents)
+          values(v_org,'rls-probe','Produto RLS',1000);
+        end if;
+
+        if not exists(select 1 from public.crm_tasks where organization_id=v_org) then
+          insert into public.crm_tasks(organization_id,title) values(v_org,'Tarefa RLS');
+        end if;
+
+        select id into v_policy from public.channel_routing_policies where organization_id=v_org and channel_session_id=v_sess;
+        if v_policy is null then
+          insert into public.channel_routing_policies(organization_id,channel_session_id)
+          values(v_org,v_sess) returning id into v_policy;
+        end if;
+        v_user:=case when v_org='${ORG_A}'::uuid then '${USER_A}'::uuid else '${USER_B}'::uuid end;
+        insert into public.channel_routing_responsibles(organization_id,policy_id,user_id)
+        values(v_org,v_policy,v_user) on conflict do nothing;
+
+        select id into v_agent from public.ai_agents where organization_id=v_org and name='RLS Draft Agent';
+        if v_agent is null then
+          insert into public.ai_agents(organization_id,name,system_prompt)
+          values(v_org,'RLS Draft Agent','RLS probe') returning id into v_agent;
+        end if;
+        select id into v_version from public.ai_agent_versions where organization_id=v_org and agent_id=v_agent and version_number=1;
+        if v_version is null then
+          insert into public.ai_agent_versions(organization_id,agent_id,version_number,system_prompt,provider,model,channel_session_id)
+          values(v_org,v_agent,1,'RLS probe','openai','gpt-4o-mini',v_sess) returning id into v_version;
+        end if;
+        if not exists(select 1 from public.ai_reply_drafts where organization_id=v_org) then
+          insert into public.ai_reply_drafts(organization_id,conversation_id,contact_id,agent_id,agent_version_id,channel_session_id,service_boundary,context_revision,operation_revision)
+          values(v_org,v_conv,v_contact,v_agent,v_version,v_sess,'{}',1,1);
         end if;
 
         if not exists (select 1 from public.org_guardrail_layers where organization_id = v_org) then
@@ -236,6 +273,11 @@ export const TABLES = [
   // lia e escrevia. É o modo de falha que o aviso acima descreve, encontrado vivo.
   "org_guardrail_layers",
   "push_subscriptions",
+  "ai_reply_drafts",
+  "catalog_products",
+  "channel_routing_policies",
+  "channel_routing_responsibles",
+  "crm_tasks",
   // ⚠️ `webhook_lead_captures` (migration 0174) NÃO entra nesta lista, e a
   // ausência é deliberada: a policy dela exige `manager`, e o usuário semeado
   // aqui é `agent` — o controle positivo falharia por ACERTO, e a "correção"
