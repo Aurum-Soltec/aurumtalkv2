@@ -88,6 +88,16 @@ export function PipelinePageClient({
           <Plus size={16} className="mr-2" /> {t("Novo Lead")}
         </Button>
       </header>
+      {seguranca.divergencias > 0 && (
+        <div
+          role="alert"
+          className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100"
+        >
+          {t(
+            "A conexão em tempo real perdeu uma atualização. O funil foi atualizado pela rede de segurança, mas pode voltar a ficar desatualizado.",
+          )}
+        </div>
+      )}
       {data && (
         <NewLeadDialog
           open={newOpen}

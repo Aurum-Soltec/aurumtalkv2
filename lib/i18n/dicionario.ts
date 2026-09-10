@@ -5187,6 +5187,17 @@ export const DICIONARIO: Traducoes = {
   "Sua conta foi confirmada, mas houve um erro ao preparar seu ambiente. Tente entrar novamente em instantes.": {
     es: "Tu cuenta fue confirmada, pero hubo un error al preparar tu ambiente. Intenta entrar de nuevo en unos instantes.",
   },
+  "Você não tem nenhuma organização ativa. Configure sua organização ou aceite um convite.": {
+    es: "No tienes ninguna organización activa. Configura tu organización o acepta una invitación.",
+  },
+  "Configurar minha organização": { es: "Configurar mi organización" },
+  "Configure sua organização": { es: "Configura tu organización" },
+  "Sua conta foi confirmada, mas a organização inicial ainda não foi criada. Informe o nome da sua empresa para concluir o primeiro acesso e abrir o onboarding do CRM.": {
+    es: "Tu cuenta fue confirmada, pero la organización inicial aún no fue creada. Indica el nombre de tu empresa para completar el primer acceso y abrir la configuración inicial del CRM.",
+  },
+  "Se você recebeu um convite, não crie uma organização nova. Use o link do convite ou peça ao administrador para reenviá-lo.": {
+    es: "Si recibiste una invitación, no crees una organización nueva. Usa el enlace de la invitación o pide al administrador que la reenvíe.",
+  },
   "Esqueci minha senha": { es: "Olvidé mi contraseña" },
   "Recuperar acesso": { es: "Recuperar acceso" },
   "Use um código de recuperação para reconfigurar sua autenticação em duas etapas.": {
@@ -6866,6 +6877,16 @@ export const DICIONARIO: Traducoes = {
   "Sua navegação foi atualizada. Você pode continuar nesta tela.": { es: "Tu navegación se actualizó. Puedes continuar en esta pantalla." },
   "Esta sessão precisa da verificação em duas etapas. Entre novamente com o código do aplicativo.": {
     es: "Esta sesión necesita verificación en dos pasos. Vuelve a entrar con el código de la aplicación.",
+  },
+  "A conexão em tempo real perdeu uma atualização. O funil foi atualizado pela rede de segurança, mas pode voltar a ficar desatualizado.": {
+    es: "La conexión en tiempo real perdió una actualización. El embudo fue actualizado por la red de seguridad, pero puede volver a quedar desactualizado.",
+  },
+  Acompanhar: { es: "Acompañar" },
+  "Não foi possível iniciar o acompanhamento": { es: "No se pudo iniciar el acompañamiento" },
+  "Erro de rede ao iniciar o acompanhamento": { es: "Error de red al iniciar el acompañamiento" },
+  "Iniciar acompanhamento?": { es: "¿Iniciar el acompañamiento?" },
+  "Toda ação será registrada como uma ação de suporte.": {
+    es: "Cada acción quedará registrada como una acción de soporte.",
   },
 };
 

@@ -33,6 +33,8 @@ export interface SendTemplateInput {
   binding: TemplateBinding;
   /** A linha do espelho local. `null` = template não existe mais na Meta. */
   current: (CurrentTemplate & { components: unknown }) | null;
+  /** Última cerca antes do efeito irreversível no provider. */
+  beforeExternalEffect?: () => Promise<void>;
 }
 
 /**
@@ -91,6 +93,7 @@ export async function sendTemplate(input: SendTemplateInput): Promise<SendTempla
   }
 
   const url = `https://graph.facebook.com/${input.graphVersion}/${input.phoneNumberId}/messages`;
+  await input.beforeExternalEffect?.();
   const res = await fetch(url, {
     method: "POST",
     headers: {

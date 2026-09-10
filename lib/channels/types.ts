@@ -305,6 +305,8 @@ export interface ChannelAdapter {
     language: string;
     /** Valores dos `{{n}}`, na ordem em que a definição os declara. */
     values: Record<string, string>;
+    /** Última cerca antes do efeito irreversível, igual ao envio livre. */
+    beforeExternalEffect?: () => Promise<void>;
   }): Promise<{ externalId: string | null }>;
 }
 

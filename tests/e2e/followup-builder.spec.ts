@@ -768,6 +768,8 @@ test.describe("followup flow builder — controle de gatilho na PublishBar (Task
       // (`lib/followup/gatilho-caso.ts`), e 5 com `webhook` — a ação de automação
       // `start_message_flow` chama `enrollFollowupFlow`, o MESMO caminho do POST
       // de enrollments, e o publish passou a aceitá-lo em `KINDS_COM_MOTOR`.
+      // O sexto é `appointment_no_show`: a confirmação de falta na Agenda faz
+      // o enrollment na mesma transação que registra o desfecho.
       // `conversation_end` continua fora, porque continua sem produtor — e o
       // publish o recusa.
       //
@@ -779,7 +781,14 @@ test.describe("followup flow builder — controle de gatilho na PublishBar (Task
       // coisas — e é o que o operador de fato vê.
       const kindSelect = panel.getByRole("combobox");
       await kindSelect.click();
-      const OFERECIDOS = ["Manual", "Silêncio", "Etapa do funil", "Agente pediu ajuda", "Automação (Webhooks)"];
+      const OFERECIDOS = [
+        "Manual",
+        "Silêncio",
+        "Etapa do funil",
+        "Falta confirmada pela equipe",
+        "Agente pediu ajuda",
+        "Automação (Webhooks)",
+      ];
       for (const nome of OFERECIDOS) {
         await expect(page.getByRole("option", { name: nome, exact: true })).toBeVisible();
       }

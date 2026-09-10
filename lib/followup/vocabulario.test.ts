@@ -479,6 +479,7 @@ describe("rótulos sob contrato de e2e", () => {
     // tests/e2e/followup-builder.spec.ts seleciona as duas opções pelo nome exato.
     expect(GATILHOS.manual).toBe("Manual");
     expect(GATILHOS.silence).toBe("Silêncio");
+    expect(GATILHOS.appointment_no_show).toBe("Falta confirmada pela equipe");
   });
 });
 

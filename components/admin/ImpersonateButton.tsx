@@ -54,7 +54,7 @@ export function ImpersonateButton({
       const json: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {
         const rawMsg = (json as { error?: { message?: string } })?.error?.message;
-        const errorMsg = rawMsg ? t(rawMsg) : t("Não foi possível iniciar impersonate");
+        const errorMsg = rawMsg ? t(rawMsg) : t("Não foi possível iniciar o acompanhamento");
         toast.error(errorMsg);
         return;
       }
@@ -68,7 +68,7 @@ export function ImpersonateButton({
       // Fallback (in case assign is intercepted in tests).
       router.push(redirectUrl);
     } catch (err) {
-      toast.error(t("Erro de rede ao iniciar impersonate"));
+      toast.error(t("Erro de rede ao iniciar o acompanhamento"));
       console.error("[impersonate] start error", err);
     } finally {
       setBusy(false);
@@ -85,24 +85,20 @@ export function ImpersonateButton({
           aria-label={
             disabled
               ? (disabledReason ?? t("Impersonate indisponível"))
-              : `${t("Impersonar")} ${displayName}`
+              : `${t("Acompanhar")} ${displayName}`
           }
           title={disabled ? disabledReason : undefined}
         >
-          {t("Impersonar tenant")}
+          {t("Acompanhar")}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("Iniciar impersonate?")}</AlertDialogTitle>
+          <AlertDialogTitle>{t("Iniciar acompanhamento?")}</AlertDialogTitle>
           <AlertDialogDescription>
             {t("Você está prestes a entrar como o tenant")}{" "}
             <span className="font-semibold text-foreground">{displayName}</span>.{" "}
-            {t("Toda ação será registrada com a flag")}{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              acting_as_platform_admin
-            </code>
-            . {t("A sessão expira em 1 hora. Confirma?")}
+            {t("Toda ação será registrada como uma ação de suporte.")} {t("A sessão expira em 1 hora. Confirma?")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

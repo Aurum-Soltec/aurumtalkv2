@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 /**
  * O INSTRUMENTO E O PRÉ-VOO — os dois buracos que sobraram do canal oficial.
@@ -254,8 +254,9 @@ describe("o pré-voo roda antes de escolher transporte", () => {
     // Colocá-lo dentro de um dos ramos deixaria o outro sem conferência — que é
     // exatamente o estado anterior.
     const preVoo = HANDLER.indexOf("await conferirDefinicao(");
-    const escolha = HANDLER.indexOf("externalId = adapter.sendTemplate");
+    const escolha = HANDLER.indexOf("if (adapter.sendTemplate)");
     expect(preVoo).toBeGreaterThan(-1);
+    expect(escolha).toBeGreaterThan(-1);
     expect(preVoo, "o pré-voo ficou depois da escolha de transporte").toBeLessThan(escolha);
   });
 

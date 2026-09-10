@@ -5,6 +5,7 @@ import { claimOfJob } from "@/lib/agent-engine/queue/claim";
 import { withAgendaEffect, guardAgendaEffect } from "@/lib/agenda/efeito";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { Queryable, JobRow } from "@/lib/agent-engine/queue/queue";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ToolSet } from "@/lib/agent-engine/edge/llm/run-model-call";
 import {
   assertCurrentServiceBoundary,
@@ -45,6 +46,43 @@ export async function requireCurrentServiceBoundary(
       ? await readCurrentServiceBoundary(db, boundary.organization_id, boundary.conversation_id)
       : null,
   );
+}
+export async function requireCurrentServiceBoundarySupabase(
+  db: SupabaseClient,
+  boundary: ServiceBoundary | null,
+): Promise<void> {
+  if (!boundary) return assertCurrentServiceBoundary(null, null);
+  const { data: conversation, error } = await db
+    .from("conversations")
+    .select("organization_id,contact_id,id,service_revision,current_demanda_id,status")
+    .eq("organization_id", boundary.organization_id)
+    .eq("id", boundary.conversation_id)
+    .maybeSingle();
+  if (error || !conversation) return assertCurrentServiceBoundary(boundary, null);
+
+  let demandaRevision: number | null = null;
+  let demandaFechadaEm: string | null = null;
+  if (conversation.current_demanda_id) {
+    const { data: demanda, error: demandaError } = await db
+      .from("demandas")
+      .select("revision,fechada_em")
+      .eq("organization_id", boundary.organization_id)
+      .eq("id", conversation.current_demanda_id)
+      .maybeSingle();
+    if (demandaError || !demanda) return assertCurrentServiceBoundary(boundary, null);
+    demandaRevision = Number(demanda.revision);
+    demandaFechadaEm = demanda.fechada_em;
+  }
+  assertCurrentServiceBoundary(boundary, {
+    organization_id: conversation.organization_id,
+    contact_id: conversation.contact_id,
+    conversation_id: conversation.id,
+    service_revision: Number(conversation.service_revision),
+    demanda_id: conversation.current_demanda_id,
+    demanda_revision: demandaRevision,
+    status: conversation.status,
+    demanda_fechada_em: demandaFechadaEm,
+  });
 }
 export function currentExecutionBoundary(): ServiceBoundary | null {
   return execution.getStore()?.boundary ?? null;

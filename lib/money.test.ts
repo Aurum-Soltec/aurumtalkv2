@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { parseReaisToCents, formatCentsBRL } from "./money";
+import { parseReaisToCents, formatCents, formatCentsBRL } from "./money";
 
 describe("parseReaisToCents", () => {
   it("lê ponto como decimal quando o grupo final não é de milhar", () => {
@@ -43,5 +43,16 @@ describe("formatCentsBRL", () => {
   it("mostra em reais o que está guardado em centavos", () => {
     expect(formatCentsBRL(24990).replace(/ /g, " ")).toBe("R$ 249,90");
     expect(formatCentsBRL(0).replace(/ /g, " ")).toBe("R$ 0,00");
+  });
+});
+
+describe("formatCents", () => {
+  it("usa a convenção territorial da moeda do negócio", () => {
+    expect(formatCents(24990, "MXN").replace(/\u00a0/g, " ")).toBe("$249.90");
+    expect(formatCents(24990, "BRL").replace(/\u00a0/g, " ")).toBe("R$ 249,90");
+  });
+
+  it("não derruba a tela diante de moeda inválida", () => {
+    expect(formatCents(24990, "")).toBe("? 249.90");
   });
 });

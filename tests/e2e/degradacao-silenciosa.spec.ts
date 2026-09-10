@@ -43,26 +43,16 @@
  * dois pontos, não três. Confira com `grep -rn data-refetch-divergencias` em
  * vez de confiar neste comentário.)
  *
- * Então o que falta aqui são duas coisas, e nenhuma é a difícil: transformar o
- * número em AVISO visível ao operador, e publicá-lo também no Inbox. No dia em
- * que isso existir, o `test.fail()` abaixo vira verde e esta cerca cumpre o que
- * prometeu.
+ * O contador agora vira aviso visível no funil. Esta prova mantém o canal
+ * assinado e engole somente as entregas para garantir que o aviso descreve a
+ * degradação silenciosa, não uma desconexão comum.
  *
  * Achado numa revisão cruzada entre MaestroConexoes e Assistente e Testes, e
  * escrito aqui em vez de numa issue porque quem chega neste arquivo é quem vai
  * pagar a dívida — e ia redescobrir o cálculo do zero.
  *
- * POR QUE `test.fail()` E NÃO UM VERMELHO DE VERDADE: hoje o sinal que a tela
- * precisaria mostrar NÃO EXISTE. O único estado publicado é o da ASSINATURA
- * (`data-realtime-status`), e ele diz `subscribed` com a entrega morta — medido.
- * Uma cerca permanentemente vermelha treina o time a ignorar vermelho, que é o
- * mesmo mecanismo pelo qual a intermitência do inbox é pior que a falha
- * determinística. Com `test.fail()` ela não polui a suíte, documenta a lacuna
- * com precisão, e VIRA CATRACA: no dia em que a tela passar a avisar, este teste
- * fica vermelho por PASSAR, e obriga alguém a virar a chave conscientemente.
- *
- * A peça que falta é do produto, não do teste: um REFETCH DE SEGURANÇA. Ele é ao
- * mesmo tempo a base da tela, a cura da perda e o detector da falha.
+ * A peça do produto é o REFETCH DE SEGURANÇA: ao mesmo tempo base da tela,
+ * cura da perda e detector que alimenta o aviso.
  */
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -123,15 +113,6 @@ test.describe("degradação silenciosa do tempo real", () => {
     // isso, "falhou como esperado" esconde QUAL asserção falhou — e uma cerca que
     // falha na PRÉ-CONDIÇÃO (nada foi engolido) parece idêntica a uma que falha
     // no ponto certo, documentando uma lacuna que ela nunca exercitou.
-    test.fail(
-      process.env.CERCA_CRUA !== "1",
-      "LACUNA CONHECIDA, não regressão: nenhuma superfície avisa quando a entrega " +
-        "de postgres_changes morre. O único estado publicado descreve a ASSINATURA " +
-        "e diz 'subscribed' com a entrega morta. Falta um refetch de segurança que " +
-        "sirva de detector. Quando existir, este teste passa e vira vermelho aqui — " +
-        "é a catraca: alguém tem de remover este test.fail conscientemente.",
-    );
-
     const creds = loadCreds();
     const env = envLocal();
     const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, {

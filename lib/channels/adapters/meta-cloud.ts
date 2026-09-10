@@ -201,6 +201,7 @@ export const metaCloudAdapter: ChannelAdapter = {
       mediaPayload(envelope) ??
       { type: "text", text: { body: envelope.body ?? "" } };
 
+    await envelope.beforeExternalEffect?.();
     const res = await fetch(
       `https://graph.facebook.com/${creds.graphVersion}/${creds.phoneNumberId}/messages`,
       {

@@ -24,6 +24,8 @@ export interface SendTemplateForSessionInput {
   name: string;
   language: string;
   values: Record<string, string>;
+  /** Última cerca, executada pela integração imediatamente antes do POST. */
+  beforeExternalEffect?: () => Promise<void>;
 }
 
 /**
@@ -74,6 +76,7 @@ export async function sendTemplateForSession(
           components: linha.components,
         }
       : null,
+    beforeExternalEffect: input.beforeExternalEffect,
   });
 
   if (resultado.sent) return resultado.externalId;

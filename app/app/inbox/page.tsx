@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { loadAuthUser, resolveActiveOrg } from "@/lib/auth/server";
 import { InboxLayout } from "@/components/inbox/InboxLayout";
 import { traduzir } from "@/lib/i18n/dicionario";
@@ -16,8 +17,16 @@ export default async function InboxPage({
   if (!activeOrg) {
     const idioma = user.idioma;
     return (
-      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-        {traduzir("Você não tem nenhuma organização ativa. Aceite um convite ou contate o admin.", idioma)}
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
+        <p>
+          {traduzir(
+            "Você não tem nenhuma organização ativa. Configure sua organização ou aceite um convite.",
+            idioma,
+          )}
+        </p>
+        <Link className="text-primary underline underline-offset-4" href="/get-started">
+          {traduzir("Configurar minha organização", idioma)}
+        </Link>
       </div>
     );
   }

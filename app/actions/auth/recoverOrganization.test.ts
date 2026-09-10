@@ -167,9 +167,9 @@ describe("o laço está cortado nos três pontos que o formavam", () => {
    * laço inteiro com a action nova intacta e todos os casos acima verdes.
    */
   const PONTOS: Array<[string, string]> = [
-    ["app/onboarding/layout.tsx", 'if (!activeOrg) redirect("/login")'],
-    ["app/onboarding/page.tsx", 'if (!activeOrg) redirect("/login")'],
-    ["app/auth/confirm/route.ts", 'return redirectTo("/onboarding/welcome")'],
+    ["app/onboarding/layout.tsx", 'if (!activeOrg) redirect("/get-started")'],
+    ["app/onboarding/page.tsx", 'if (!activeOrg) redirect("/get-started")'],
+    ["app/auth/confirm/route.ts", 'return redirectTo("/get-started")'],
   ];
 
   it.each(PONTOS)("%s manda para a saída, não de volta para o login", async (arquivo, esperado) => {
@@ -183,7 +183,6 @@ describe("o laço está cortado nos três pontos que o formavam", () => {
     const { readFileSync } = await import("node:fs");
     const { join } = await import("node:path");
     const fonte = readFileSync(join(process.cwd(), "app/app/inbox/page.tsx"), "utf8");
-    expect(fonte).toContain("Você não tem nenhuma organização ativa.");
-    expect(fonte).not.toContain('href="/get-started"');
+    expect(fonte).toContain('href="/get-started"');
   });
 });

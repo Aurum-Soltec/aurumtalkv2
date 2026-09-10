@@ -34,7 +34,7 @@ export default async function TenantSettingsPage() {
   const { data } = await supabase
     .from("organizations")
     .select(
-      "display_name, legal_name, cnpj, timezone, locale, media_retention_days, dpo_email, privacy_policy_url, settings",
+      "display_name, legal_name, cnpj, timezone, locale, currency, media_retention_days, dpo_email, privacy_policy_url, settings",
     )
     .eq("id", activeOrg.orgId)
     .maybeSingle();

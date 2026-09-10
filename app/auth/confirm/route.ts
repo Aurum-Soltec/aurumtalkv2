@@ -149,5 +149,5 @@ export async function GET(request: NextRequest) {
     requestId,
   });
 
-  return redirectTo("/onboarding/welcome");
+    return redirectTo("/get-started");
 }

@@ -203,6 +203,7 @@ export const zernioAdapter: ChannelAdapter = {
       ...(envelope.replyToExternalId ? { replyTo: envelope.replyToExternalId } : {}),
     };
 
+    await envelope.beforeExternalEffect?.();
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -252,6 +253,7 @@ export const zernioAdapter: ChannelAdapter = {
     name: string;
     language: string;
     values: Record<string, string>;
+    beforeExternalEffect?: () => Promise<void>;
   }): Promise<{ externalId: string | null }> {
     const admin = createAdminClient();
     const creds = await resolveZernioCreds(admin, {
@@ -272,6 +274,7 @@ export const zernioAdapter: ChannelAdapter = {
       .sort((a, b) => Number(a) - Number(b))
       .map((k) => input.values[k] ?? "");
 
+    await input.beforeExternalEffect?.();
     const res = await fetch(`${creds.baseUrl}/v1/inbox/conversations`, {
       method: "POST",
       headers: {

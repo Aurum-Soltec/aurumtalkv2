@@ -83,10 +83,25 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     const other = await otherContext.newPage();
     const guest = await guestContext.newPage();
     const realtime: string[] = [];
+    let interfaceSubscribed = false;
     member.on("websocket", (ws) =>
       ws.on("framereceived", (event) => {
         const payload = event.payload.toString();
-        if (payload.includes('"table":"user_organizations"')) realtime.push(payload);
+        try {
+          const parsed = JSON.parse(payload) as unknown;
+          if (!Array.isArray(parsed)) return;
+          const topic = String(parsed[2] ?? "");
+          const kind = String(parsed[3] ?? "");
+          const body = parsed[4] as { status?: string; data?: { table?: string } } | undefined;
+          if (topic.startsWith("realtime:interface:") && kind === "phx_reply" && body?.status === "ok") {
+            interfaceSubscribed = true;
+          }
+          if (kind === "postgres_changes" && body?.data?.table === "user_organizations") {
+            realtime.push(payload);
+          }
+        } catch {
+          // Frames de controle que não são JSON não participam desta prova.
+        }
       }),
     );
     await login(page, emails[0]!);
@@ -96,6 +111,7 @@ test("interface por membro atualiza ao vivo, preserva formulário e convite apli
     await member.getByLabel("Nome completo").fill("Rascunho não salvo");
     await login(other, emails[2]!);
     await expect(nav(member).getByRole("link", { name: "Radar", exact: true })).toBeVisible();
+    await expect.poll(() => interfaceSubscribed, { timeout: 15_000 }).toBe(true);
     const framesBefore = realtime.length;
     await customize(page, emails[1]!);
     // Evento real precisa chegar; polling não pode aprovar a observação em tempo real.

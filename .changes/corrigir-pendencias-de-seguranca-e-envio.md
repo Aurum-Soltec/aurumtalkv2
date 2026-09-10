@@ -19,3 +19,6 @@ Operações administrativas e de configuração também passam a respeitar o mod
 de acompanhamento somente leitura antes de qualquer gravação. As verificações
 de PDF e de cobertura dessas rotas agora funcionam igual no Windows e no Linux,
 evitando um resultado local verde que falhe apenas no servidor de integração.
+Os cenários visuais também voltaram a limpar a preferência de tema pela chave
+atual e a reconhecer o gatilho de falta da Agenda, mantendo o E2E alinhado às
+capacidades que a própria interface oferece.

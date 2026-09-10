@@ -83,6 +83,33 @@ export const MOEDAS_SERVIDAS = ["BRL", "USD", "EUR", "MXN"] as const;
 export type MoedaServida = (typeof MOEDAS_SERVIDAS)[number];
 export const MOEDA_PADRAO: MoedaServida = "BRL";
 
+const formatadores = new Map<string, Intl.NumberFormat>();
+
+/** A convenção do preço acompanha a moeda do negócio, não o idioma da interface. */
+function formatadorDa(moeda: string): Intl.NumberFormat {
+  const cacheado = formatadores.get(moeda);
+  if (cacheado) return cacheado;
+
+  let locale = "en-US";
+  try {
+    const provavel = new Intl.Locale(`und-${moeda.slice(0, 2)}`).maximize();
+    const tag = `${provavel.language}-${provavel.region}`;
+    if (Intl.NumberFormat.supportedLocalesOf(tag).length > 0) locale = tag;
+  } catch {
+    // Código desconhecido: o fallback explicita a moeda em vez de ocultá-la.
+  }
+  const novo = new Intl.NumberFormat(locale, { style: "currency", currency: moeda });
+  formatadores.set(moeda, novo);
+  return novo;
+}
+
 export function formatCents(cents: number, currency: string = MOEDA_PADRAO): string {
-  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency });
+  const valor = (cents ?? 0) / 100;
+  try {
+    const nf = formatadorDa(currency);
+    const casas = nf.resolvedOptions().maximumFractionDigits ?? 2;
+    return nf.format((cents ?? 0) / 10 ** casas);
+  } catch {
+    return `${currency || "?"} ${valor.toFixed(2)}`;
+  }
 }

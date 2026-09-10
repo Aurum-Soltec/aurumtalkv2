@@ -282,7 +282,7 @@ test("Inbox marca cliente/conversa; detalhe antigo confirma presença com evidê
     p = await person(f);
   await inbound(f, p, "Preciso marcar uma consulta");
   await login(page, f.email);
-  await page.goto(`/app/inbox/${p.conversation}`);
+  await page.goto(`/app/inbox?id=${p.conversation}`);
   await page.getByRole("link", { name: "Marcar compromisso", exact: true }).click();
   const panel = page.getByTestId("painel-de-marcacao");
   await expect(panel).toBeVisible();
@@ -846,19 +846,17 @@ test("receiver reconcilia inline/daemon, barra claim antigo e protege agenda al�
     let armed = true;
     const racing = createClient(credentials.url, credentials.serviceRole, {
       auth: { persistSession: false },
-      global: {
-        fetch: async (input, init) => {
-          const response = await fetch(input, init);
-          const url =
-            typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-          if (
-            armed &&
-            url.includes("/rest/v1/messages") &&
-            init?.method === "POST" &&
-            response.ok
-          ) {
-            armed = false;
-            await insert("calendar_appointments", {
+        global: {
+          fetch: async (input, init) => {
+            const url =
+              typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+            if (
+              armed &&
+              url.includes("/rest/v1/calendar_appointments") &&
+              (init?.method ?? "GET") === "GET"
+            ) {
+              armed = false;
+              await insert("calendar_appointments", {
               id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
               organization_id: f.org,
               contact_id: p.contact,
@@ -866,12 +864,12 @@ test("receiver reconcilia inline/daemon, barra claim antigo e protege agenda al�
               title: "Novo compromisso protege o cliente",
               status: "confirmed",
               starts_at: new Date(Date.now() + 86400000).toISOString(),
-              ends_at: new Date(Date.now() + 90000000).toISOString(),
-            });
-          }
-          return response;
+                ends_at: new Date(Date.now() + 90000000).toISOString(),
+              });
+            }
+            return fetch(input, init);
+          },
         },
-      },
     });
     expect(await enviarTextoFixoPendente(racing, [p.contact])).toBe(0);
     expect(armed).toBe(false);
@@ -996,6 +994,28 @@ test("Radar recorta demandas pela RLS real, além do pool frio, e preserva gest�
       });
       if (linked.error) throw linked.error;
     }
+  }
+  // Criações de lead/conversa podem abrir demandas próprias por trigger. Esta
+  // prova mede o recorte de visibilidade das seis demandas nomeadas acima; as
+  // auxiliares da fixture recebem próximo passo para não contaminarem a régua.
+  const idsEsperados = new Set(Object.values(expected));
+  const { data: demandasDaFixture, error: demandasError } = await db
+    .from("demandas")
+    .select("id")
+    .eq("organization_id", f.org)
+    .is("fechada_em", null)
+    .is("proximo_passo", null);
+  if (demandasError) throw demandasError;
+  const auxiliares = (demandasDaFixture ?? [])
+    .map((demanda) => demanda.id)
+    .filter((id) => !idsEsperados.has(id));
+  if (auxiliares.length > 0) {
+    const marcado = await db
+      .from("demandas")
+      .update({ proximo_passo: "Coberta pela preparação deste cenário E2E" })
+      .eq("organization_id", f.org)
+      .in("id", auxiliares);
+    if (marcado.error) throw marcado.error;
   }
   const policy = async (mode: string) => {
     const changed = await db

@@ -67,6 +67,23 @@ describe("sendTemplate", () => {
     ]);
   });
 
+  it("executa a última cerca imediatamente antes do POST e respeita o veto", async () => {
+    const fetchSpy = stubFetch({ messages: [{ id: "não-deveria-sair" }] });
+    const cerca = vi.fn().mockRejectedValue(new Error("operação interrompida"));
+
+    await expect(
+      sendTemplate({
+        ...BASE,
+        binding: BINDING,
+        current: CURRENT,
+        beforeExternalEffect: cerca,
+      }),
+    ).rejects.toThrow("operação interrompida");
+
+    expect(cerca).toHaveBeenCalledOnce();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it("bind STALE não envia — e diz o motivo, não um false mudo", async () => {
     const spy = stubFetch({});
     const r = await sendTemplate({

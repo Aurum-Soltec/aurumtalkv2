@@ -112,7 +112,9 @@ test.describe("navegação agrupada", () => {
     // "Funis" seguiria verde medindo a outra tela; por isso a asserção de URL
     // abaixo é específica (`settings/tenant/pipelines`) e não o antigo
     // /pipelines/, que casa com as duas.
-    await sidebar(page).getByRole("link", { name: "Etapas do funil" }).click();
+    await sidebar(page).getByRole("link", { name: "Ver tudo em CRM" }).click();
+    await page.waitForURL(/\/app\/crm$/);
+    await page.getByRole("link", { name: /Etapas do funil/ }).click();
     await page.waitForURL(/settings\/tenant\/pipelines/);
     await expect(page.getByRole("heading", { name: "Etapas do funil", level: 1 })).toBeVisible();
   });

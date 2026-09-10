@@ -31,9 +31,29 @@ import type { ListMessagesQuery, SendMessageInput } from "@/lib/schemas";
 import { sendTemplateForSession } from "@/lib/channels/meta/send-template-for-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Message } from "@/lib/types/messaging";
-import { guardServiceEffect } from "@/lib/atendimento/fronteira-server";
+import {
+  guardServiceEffect,
+  requireCurrentServiceBoundarySupabase,
+} from "@/lib/atendimento/fronteira-server";
+import { assertAgendaEffectSupabase } from "@/lib/agenda/efeito";
+import { assertMeetingDeliverySupabase } from "@/lib/agenda/meet-delivery";
+import { assertApprovedReplySupabase } from "@/lib/ai/replies/delivery";
+import { assertAgentOperationSupabase } from "@/lib/ai/agents/operation";
 
 type SB = SupabaseClient;
+
+async function guardMessageExternalEffect(supabase: SB, ctx: HandlerCtx): Promise<void> {
+  // O ALS cobre workers que carregam o job inteiro. Os contextos explícitos
+  // cobrem chamadas inline e retries que atravessam apenas este handler.
+  await guardServiceEffect();
+  if (ctx.agentOperation) await assertAgentOperationSupabase(supabase, ctx.agentOperation);
+  if (ctx.serviceBoundary !== undefined) {
+    await requireCurrentServiceBoundarySupabase(supabase, ctx.serviceBoundary);
+  }
+  if (ctx.proactiveContext) await assertAgendaEffectSupabase(supabase, ctx.proactiveContext);
+  if (ctx.meetingDelivery) await assertMeetingDeliverySupabase(supabase, ctx.meetingDelivery);
+  if (ctx.approvedReply) await assertApprovedReplySupabase(supabase, ctx.approvedReply);
+}
 
 /**
  * Remove a linha que o WEBHOOK criou para a mensagem que ESTE envio acabou de
@@ -565,6 +585,7 @@ export async function sendMessageHandler(
     if (updated) message = updated as unknown as Message;
   } else {
     try {
+      const beforeExternalEffect = () => guardMessageExternalEffect(supabase, ctx);
       // O que separa mídia de texto é a presença de `media` no envelope — o
       // adapter preserva o mesmo branch (e a mesma mensagem de erro de cada
       // método) do outro lado do seam.
@@ -599,25 +620,29 @@ export async function sendMessageHandler(
           values: input.template_values ?? {},
         });
 
-        externalId = adapter.sendTemplate
-          ? (
-              await adapter.sendTemplate({
-                organizationId: ctx.organization_id,
-                sessionRef: resolveSessionRef(c.channel_sessions),
-                to: chatId,
-                providerConversationId: c.provider_conversation_id,
-                name: input.template_name ?? "",
-                language: input.template_language ?? "",
-                values: input.template_values ?? {},
-              })
-            ).externalId
-          : await sendTemplateForSession(supabase, {
+        if (adapter.sendTemplate) {
+          externalId = (
+            await adapter.sendTemplate({
               organizationId: ctx.organization_id,
+              sessionRef: resolveSessionRef(c.channel_sessions),
               to: chatId,
+              providerConversationId: c.provider_conversation_id,
               name: input.template_name ?? "",
               language: input.template_language ?? "",
               values: input.template_values ?? {},
-            });
+              beforeExternalEffect,
+            })
+          ).externalId;
+        } else {
+          externalId = await sendTemplateForSession(supabase, {
+            organizationId: ctx.organization_id,
+            to: chatId,
+            name: input.template_name ?? "",
+            language: input.template_language ?? "",
+            values: input.template_values ?? {},
+            beforeExternalEffect,
+          });
+        }
       } else if (input.media_storage_path) {
         // Storage-first: signed URL curta só pro canal baixar (nunca base64).
         const admin = createAdminClient();
@@ -643,7 +668,7 @@ export async function sendMessageHandler(
           // O id que a PLATAFORMA conhece, lido da linha citada agora — não uma
           // cópia guardada no envio, que poderia divergir da linha.
           replyToExternalId: citada?.external_id ?? null,
-          beforeExternalEffect: guardServiceEffect,
+          beforeExternalEffect,
         }));
       } else if (input.type === "contact") {
         const sc = outboundMetadata.shared_contact as
@@ -672,7 +697,7 @@ export async function sendMessageHandler(
             whatsappId: phoneToWhatsappId(telefone),
             vcard: buildVcard(nome, telefone),
           },
-          beforeExternalEffect: guardServiceEffect,
+          beforeExternalEffect,
         }));
       } else {
         ({ externalId } = await adapter.send({
@@ -683,7 +708,7 @@ export async function sendMessageHandler(
           kind: input.type,
           body: input.body ?? "",
           replyToExternalId: citada?.external_id ?? null,
-          beforeExternalEffect: guardServiceEffect,
+          beforeExternalEffect,
         }));
       }
       await removerEcoDoProprioEnvio(
