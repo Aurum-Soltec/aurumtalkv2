@@ -152,8 +152,7 @@ export async function enviarTextoFixoPendente(
         });
         throw err;
       }
-      const { error: doneErr } = await updateJob({ status: "done", last_error: null });
-      if (doneErr) throw new Error(doneErr.message);
+      await updateJob({ status: "done", last_error: null });
     } catch (err) {
       const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : String(err);
       logger.warn("[dev.pipeline] envio inline falhou", { error: message });
