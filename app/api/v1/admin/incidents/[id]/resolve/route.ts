@@ -14,6 +14,7 @@ import { requirePlatformAdmin } from "@/lib/auth/requirePlatformAdmin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ok, fail } from "@/lib/api/wrappers";
 import { audit } from "@/lib/audit";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 const bodySchema = z.object({
   resolution_note: z
@@ -55,6 +56,9 @@ export async function POST(
   if (loadError || !incident) {
     return fail("not_found", "Incident not found", 404, { requestId });
   }
+
+  const supportDenied = await requireSupportWrite(incident.organization_id);
+  if (supportDenied) return supportDenied;
 
   if (incident.status === "resolved") {
     return fail("state_conflict", "Incident is already resolved", 409, { requestId });

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, it } from "vitest";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -75,7 +75,7 @@ async function rendered(data: ExportPayload) {
     join(
       dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")),
       "standard_fonts",
-    ) + "\\",
+    ) + sep,
   ).href;
   const task = getDocument({ data: new Uint8Array(bytes), standardFontDataUrl: fonts });
   const document = await task.promise;

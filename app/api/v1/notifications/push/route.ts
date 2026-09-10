@@ -12,6 +12,7 @@ import { audit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth/require-role";
 import { createClient } from "@/lib/supabase/server";
 import { vapidPronto, vapidPublica } from "@/lib/notifications/vapid";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,8 @@ export async function PUT(req: NextRequest): Promise<Response> {
   const requestId = randomUUID();
   const authz = await requireRole("viewer", { requestId, resource: "push_subscriptions" });
   if (!authz.ok) return authz.response;
+  const supportDenied = await requireSupportWrite(authz.org.orgId);
+  if (supportDenied) return supportDenied;
   if (!vapidPronto()) {
     return fail("unavailable", "Web Push não configurado nesta instalação.", 503, { requestId });
   }
@@ -92,6 +95,8 @@ export async function DELETE(req: NextRequest): Promise<Response> {
   const requestId = randomUUID();
   const authz = await requireRole("viewer", { requestId, resource: "push_subscriptions" });
   if (!authz.ok) return authz.response;
+  const supportDenied = await requireSupportWrite(authz.org.orgId);
+  if (supportDenied) return supportDenied;
 
   let raw: unknown;
   try {

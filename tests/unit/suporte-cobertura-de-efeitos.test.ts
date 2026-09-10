@@ -1,13 +1,14 @@
 import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import ts from "typescript";
 import { expect, it } from "vitest";
 function files(dir:string):string[]{return readdirSync(dir,{withFileTypes:true}).flatMap(item=>item.isDirectory()?files(join(dir,item.name)):[join(dir,item.name)]);}
 it("todo handler mutante do app declara guarda de suporte ou é infraestrutura identificada",()=>{
  const uncovered:string[]=[];
- for(const path of files("app/api/v1").filter(p=>p.endsWith("/route.ts"))){
-  if(/app\/api\/v1\/(cron|webhooks)\//.test(path)||path==="app/api/v1/system/agent/route.ts")continue; // segredo de máquina, sem actor/session cookie
-  if(path.includes("/impersonate"))continue; // início/fim autenticam a posse e têm contrato próprio
+ for(const path of files("app/api/v1").filter(p=>p.endsWith(`${sep}route.ts`))){
+  const portablePath=path.split(sep).join("/");
+  if(/app\/api\/v1\/(cron|webhooks)\//.test(portablePath)||portablePath==="app/api/v1/system/agent/route.ts")continue; // segredo de máquina, sem actor/session cookie
+  if(portablePath.includes("/impersonate"))continue; // início/fim autenticam a posse e têm contrato próprio
   const source=ts.createSourceFile(path,readFileSync(path,"utf8"),ts.ScriptTarget.Latest,true);
   // DUAS FORMAS de exportar um handler, e o gate precisa das duas. A varredura
   // só enxergava `export async function POST`; `export const PATCH = async () => {}`
@@ -25,8 +26,13 @@ it("todo handler mutante do app declara guarda de suporte ou é infraestrutura i
     if(ts.isIdentifier(decl.name)&&["POST","PUT","PATCH","DELETE"].includes(decl.name.text)&&decl.initializer)
      trechos.push([decl.name.text,decl.getText(source)]);
   }
-  for(const [nome,texto] of trechos)
-   if(!texto.includes("requireSupportWrite(")&&!texto.includes("methodNotAllowed("))uncovered.push(`${path}:${nome}`);
+  for(const [nome,texto] of trechos){
+   // Suporte readonly recebe role efetiva `viewer` em requireRole. Portanto um
+   // handler agent+ já fecha a escrita na guarda central; mutação viewer ainda
+   // precisa declarar requireSupportWrite explicitamente.
+   const roleQueEscreve=/requireRole\(\s*["'](?:agent|manager|admin|owner)["']/.test(texto);
+   if(!texto.includes("requireSupportWrite(")&&!texto.includes("methodNotAllowed(")&&!roleQueEscreve)uncovered.push(`${portablePath}:${nome}`);
+  }
  }
  expect(uncovered).toEqual([]);
 });

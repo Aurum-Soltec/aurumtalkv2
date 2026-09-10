@@ -40,6 +40,7 @@ import {
 import { findPartnerSession } from "@/lib/channels/connect";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 
@@ -140,6 +141,8 @@ export async function POST(req: NextRequest): Promise<Response> {
   const requestId = randomUUID();
   const r = await contexto(requestId);
   if (!r.ok) return r.res;
+  const supportDenied = await requireSupportWrite(r.ctx.orgId);
+  if (supportDenied) return supportDenied;
 
   const adapter = getAdapter(r.ctx.provider);
   if (!adapter.templates) {

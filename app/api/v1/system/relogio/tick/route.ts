@@ -12,6 +12,7 @@ import { loadAuthUser } from "@/lib/auth/server";
 import { requireRole } from "@/lib/auth/require-role";
 import { env } from "@/lib/env";
 import { executarTickDoRelogio } from "@/lib/relogio/executar";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -60,8 +61,12 @@ async function sessaoAdmin(requestId: string): Promise<boolean> {
 export async function POST(req: NextRequest): Promise<Response> {
   const requestId = randomUUID();
   const porSegredo = bearerValido(req);
-  if (!porSegredo && !(await sessaoAdmin(requestId))) {
-    return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
+  if (!porSegredo) {
+    if (!(await sessaoAdmin(requestId))) {
+      return fail("forbidden", "Cron secret missing or invalid.", 403, { requestId });
+    }
+    const supportDenied = await requireSupportWrite();
+    if (supportDenied) return supportDenied;
   }
 
   try {

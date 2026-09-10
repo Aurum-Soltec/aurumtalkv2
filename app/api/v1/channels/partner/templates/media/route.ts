@@ -29,6 +29,7 @@ import { fail, ok } from "@/lib/api/wrappers";
 import { loadAuthUser, resolveActiveOrg } from "@/lib/auth/server";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,8 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (!user) return fail("unauthenticated", "Faça login.", 401, { requestId });
   const org = await resolveActiveOrg(user);
   if (!org) return fail("forbidden", "Sem organização ativa.", 403, { requestId });
+  const supportDenied = await requireSupportWrite(org.orgId);
+  if (supportDenied) return supportDenied;
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");

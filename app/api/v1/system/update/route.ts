@@ -13,6 +13,7 @@ import { loadAuthUser } from "@/lib/auth/server";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isRunStale } from "@/lib/system/update-run";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,8 @@ export async function POST(_req: NextRequest): Promise<Response> {
   if (!user.is_platform_admin) {
     return fail("forbidden", "Só o dono do servidor pode atualizar o sistema.", 403);
   }
+  const supportDenied = await requireSupportWrite();
+  if (supportDenied) return supportDenied;
 
   const db = createAdminClient();
   const { data: version, error: versionError } = await db

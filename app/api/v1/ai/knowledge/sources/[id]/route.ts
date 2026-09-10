@@ -14,6 +14,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { aceitaTextoColado, canonizarTipoDeFonte } from "@/lib/ai/rag/tipos-de-fonte";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +108,8 @@ export async function PATCH(
   const ctx = await resolveContext(requestId);
   if (ctx.error) return ctx.error;
   const { activeOrg } = ctx as Exclude<typeof ctx, { error: Response }>;
+  const supportDenied = await requireSupportWrite(activeOrg.orgId);
+  if (supportDenied) return supportDenied;
 
   // Parse + validate body.
   let rawBody: unknown;
@@ -252,6 +255,8 @@ export async function DELETE(
   const ctx = await resolveContext(requestId);
   if (ctx.error) return ctx.error;
   const { activeOrg } = ctx as Exclude<typeof ctx, { error: Response }>;
+  const supportDenied = await requireSupportWrite(activeOrg.orgId);
+  if (supportDenied) return supportDenied;
 
   // Verify ownership with user-scoped client.
   const supabase = await createClient();

@@ -73,6 +73,7 @@ import { extensaoDe, farejarTipo, pareceSvg, podeApagar } from "@/lib/branding/l
 import { marcaDaOrganizacaoDeSettings } from "@/lib/branding/organizacao";
 import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 
@@ -368,6 +369,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     return fail(aberto.recusa.codigo, aberto.recusa.mensagem, aberto.recusa.status, { requestId });
   }
   const ctx = aberto.ctx;
+  const supportDenied = await requireSupportWrite(ctx.escopo === "organizacao" ? ctx.orgId : undefined);
+  if (supportDenied) return supportDenied;
 
   const limite = await checkRateLimit(
     `marca-logo:${ctx.userId}`,
@@ -465,6 +468,8 @@ export async function DELETE(req: NextRequest): Promise<Response> {
     return fail(aberto.recusa.codigo, aberto.recusa.mensagem, aberto.recusa.status, { requestId });
   }
   const ctx = aberto.ctx;
+  const supportDenied = await requireSupportWrite(ctx.escopo === "organizacao" ? ctx.orgId : undefined);
+  if (supportDenied) return supportDenied;
 
   const limite = await checkRateLimit(
     `marca-logo:${ctx.userId}`,

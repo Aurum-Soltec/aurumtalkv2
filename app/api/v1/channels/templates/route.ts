@@ -19,6 +19,7 @@ import { normalizeRejectedReason } from "@/lib/channels/meta/webhook";
 import { deriveTemplateContract, describeAddress } from "@/lib/channels/meta/template-contract";
 import { syncTemplates } from "@/lib/channels/meta/template-sync";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -149,6 +150,8 @@ export async function POST(_req: NextRequest): Promise<NextResponse> {
   const requestId = randomUUID();
   const r = await orgOrFail(requestId);
   if (!r.autorizado) return r.resposta;
+  const supportDenied = await requireSupportWrite(r.orgId);
+  if (supportDenied) return supportDenied;
 
   const sessao = await metaSessionForOrg(r.orgId);
   if (!sessao?.wabaId) {

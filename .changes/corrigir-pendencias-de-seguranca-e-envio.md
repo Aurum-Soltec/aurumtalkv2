@@ -14,3 +14,8 @@ faltavam, incluindo superfícies internas que não podem ser acessadas pela sess
 comum. A anonimização LGPD também remove texto pessoal de rascunhos de resposta
 e tarefas do CRM, preservando a porta administrativa existente e suas regras de
 papel, organização, suporte e MFA.
+
+Operações administrativas e de configuração também passam a respeitar o modo
+de acompanhamento somente leitura antes de qualquer gravação. As verificações
+de PDF e de cobertura dessas rotas agora funcionam igual no Windows e no Linux,
+evitando um resultado local verde que falhe apenas no servidor de integração.

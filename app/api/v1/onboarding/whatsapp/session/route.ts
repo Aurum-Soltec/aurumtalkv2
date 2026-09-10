@@ -11,6 +11,7 @@ import {
 } from "@/lib/channels/reactivate";
 import { getWahaClient } from "@/lib/waha/client";
 import { createClient } from "@/lib/supabase/server";
+import { requireSupportWrite } from "@/lib/impersonate/support";
 
 /**
  * Onboarding WhatsApp session orchestration.
@@ -136,6 +137,8 @@ export async function POST(req: Request) {
   if (!user) return fail("unauthenticated", "Sessão expirada", 401);
   const activeOrg = await resolveActiveOrg(user);
   if (!activeOrg) return fail("tenant_not_found", "Sem organização ativa", 404);
+  const supportDenied = await requireSupportWrite(activeOrg.orgId);
+  if (supportDenied) return supportDenied;
   const waha = getWahaClient();
   if (!waha) return fail("waha_not_configured", "Suba o Docker (docker compose up -d waha) e tente novamente.", 503);
   const sessionName = defaultSessionName(activeOrg.orgId);
