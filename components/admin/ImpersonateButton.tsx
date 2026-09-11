@@ -10,7 +10,6 @@
  * (default `/app/inbox`) so they immediately enter the tenant context.
  */
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -41,7 +40,6 @@ export function ImpersonateButton({
   disabledReason,
 }: ImpersonateButtonProps) {
   const t = useT();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [readonly, setReadonly] = useState(false);
@@ -68,8 +66,6 @@ export function ImpersonateButton({
       // Hard navigation so the new cookie is sent on the next request and the
       // server layout can read it to render the banner.
       window.location.assign(redirectUrl);
-      // Fallback (in case assign is intercepted in tests).
-      router.push(redirectUrl);
     } catch {
       toast.error(t("Erro de rede ao iniciar o acompanhamento"));
     } finally {

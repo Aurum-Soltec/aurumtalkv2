@@ -47,4 +47,7 @@ it("avisa as outras abas somente depois do suporte ser confirmado", async () => 
   fireEvent.click(screen.getByRole("button", { name: "Acompanhar Empresa teste" }));
   fireEvent.click(screen.getByRole("button", { name: "Confirmar e entrar" }));
   await waitFor(() => expect(mocks.notify).toHaveBeenCalledOnce());
+  expect(assign).toHaveBeenCalledWith("/app/inbox");
+  // Uma navegação RSC simultânea reabre o cache do contexto anterior.
+  expect(mocks.push).not.toHaveBeenCalled();
 });
