@@ -1,6 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
+import { usePermission } from "@/hooks/auth/AuthProvider";
 
 export interface MessageTemplate {
   id: string;
@@ -12,7 +13,9 @@ export interface MessageTemplate {
 
 /** Onda 5: templates de script (pessoais + compartilhados) para o slash-menu do composer. */
 export function useMessageTemplates() {
+  const allowed = usePermission("message-templates.view");
   return useQuery({
+    enabled: allowed,
     queryKey: ["message-templates"],
     queryFn: async () => apiClient.get<{ data: MessageTemplate[] }>("/api/v1/message-templates"),
     staleTime: 60_000,

@@ -143,6 +143,14 @@ test("org única oferece criação, responsável aceita e A→B→A não mistura
       });
       await page.getByTestId("tenant-switcher").click();
       const navigation = page.waitForNavigation({ waitUntil: "load" });
+      // O documento novo pode terminar antes da consulta do Inbox. A prova de
+      // isolamento espera a resposta da organização alvo antes de medir a tela.
+      const targetInbox = page.waitForResponse(async response => {
+        if (new URL(response.url()).pathname !== "/api/v1/conversations" || response.status() !== 200) return false;
+        const body = await response.json().catch(() => null);
+        return body?.data?.some((conversation: { organization_id?: string }) => conversation.organization_id === target) === true;
+      }, { timeout: 30_000 });
+      void targetInbox.catch(() => {});
       await page.getByTestId(`tenant-switcher-item-${target}`).click({ noWaitAfter: true });
       try {
         const guard = page.getByTestId("organization-transition");
@@ -155,6 +163,7 @@ test("org única oferece criação, responsável aceita e A→B→A não mistura
         await page.screenshot({ path: `.superpowers/evidence/comunidade-360/transicao-para-${own}.png` });
       } finally { release(); }
       await navigation;
+      await targetInbox;
       await expect(page).toHaveURL(/\/app\/inbox/);
       await page.unroute("**/app/**");
       await expect(page.getByTestId("tenant-switcher")).toContainText(`Empresa ${own} ${suffix}`);

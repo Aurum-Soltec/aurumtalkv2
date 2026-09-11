@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
+import { usePermission } from "@/hooks/auth/AuthProvider";
 
 /**
  * A org tem atendimento automático de pé?
@@ -13,7 +14,9 @@ import { apiClient } from "@/lib/api/client";
  * trata `undefined` como "não afirme nada".
  */
 export function useAutomaticoAtivo() {
+  const allowed = usePermission("ai.automatico.view");
   return useQuery({
+    enabled: allowed,
     queryKey: ["ai", "automatico-ativo"],
     queryFn: async () => {
       const r = await apiClient.get<{ data: { ativo: boolean } }>(

@@ -16,3 +16,6 @@ a mensagem já aceita pelo canal.
 A entrada do aplicativo respeita os destinos configurados para o membro.
 O início do suporte oferece o modo somente leitura e avisa as outras abas
 para que atualizem o contexto da organização acompanhada.
+Nesse modo, abrir conversas não altera o contador de mensagens não lidas nem
+dispara consultas internas reservadas a atendentes. O acompanhamento também
+permanece no aplicativo quando a organização ainda não concluiu a instalação.

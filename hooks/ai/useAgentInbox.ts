@@ -1,6 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
+import { usePermission } from "@/hooks/auth/AuthProvider";
 import type { AgentInboxSeverity } from "@/lib/ai/agent-inbox-copy";
 import type { DestinoDoAviso } from "@/lib/ai/inbox-destino";
 
@@ -24,7 +25,9 @@ export interface AgentInboxData {
 
 /** Central de avisos do runtime (F1). Polling 60s — avisos nascem no worker. */
 export function useAgentInbox(status: "open" | "resolved" = "open") {
+  const allowed = usePermission("ai.inbox.view");
   return useQuery({
+    enabled: allowed,
     queryKey: ["agent-inbox", status],
     refetchInterval: 60_000,
     queryFn: () =>
