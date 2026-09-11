@@ -19,9 +19,8 @@ salvar/recarregar e visibilidade dos botões em viewport desktop e mobile.
 O grupo usa um fluxo descartável próprio e o remove ao terminar.
 
 Prova local em 2026-09-11: **PASS**, Chromium, build de produção com Supabase
-local. Capturas inspecionadas em `e2e-artifacts/followup-controles-box.png`,
-`followup-controles-conexao.png` e `followup-controles-mobile.png` (1600×900 e
-390×844). As asserções `toBeInViewport` cobrem a presença real dos botões no painel.
+local. Foram inspecionadas as capturas descartáveis geradas pelo teste em 1600×900
+e 390×844. As asserções `toBeInViewport` cobrem a presença real dos botões no painel.
 
 ## Living System Checklist
 

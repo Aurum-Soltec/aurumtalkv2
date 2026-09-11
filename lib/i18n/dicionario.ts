@@ -958,6 +958,16 @@ export const DICIONARIO: Traducoes = {
   "Quando seguir por esta aresta": { es: "Cuándo seguir por esta arista" },
   "São as saídas do nó": { es: "Son las salidas del nodo" },
   "as mesmas que aparecem no card.": { es: "las mismas que aparecen en la tarjeta." },
+  "Desfazer ação": { es: "Deshacer acción" },
+  "Desconectar box": { es: "Desconectar bloque" },
+  "Excluir box": { es: "Eliminar bloque" },
+  "Remover conexão": { es: "Eliminar conexión" },
+  "Excluir remove o box e suas conexões. Você pode desfazer antes de sair do editor.": {
+    es: "Eliminar borra el bloque y sus conexiones. Puedes deshacerlo antes de salir del editor.",
+  },
+  "Sempre: ao concluir este box, o fluxo segue para o próximo sem testar uma condição. Para criar caminhos diferentes, adicione um box Condição, Classificar (IA) ou Resposta (texto).": {
+    es: "Siempre: al finalizar este bloque, el flujo continúa al siguiente sin evaluar una condición. Para crear caminos diferentes, añade un bloque Condición, Clasificar (IA) o Respuesta (texto).",
+  },
   "Configuração inválida.": { es: "Configuración inválida." },
   "Tempo fixo": { es: "Tiempo fijo" },
   "A IA escolhe a hora": { es: "La IA elige el momento" },
