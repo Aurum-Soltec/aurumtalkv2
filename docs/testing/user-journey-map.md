@@ -10,6 +10,10 @@
 
 ## Convenções
 
+Prova dos controles reversíveis do editor de follow-ups: [roteiro e vínculo com o sistema](./followup-editor-controles.md).
+O grupo `controles reversíveis do editor` de `followup-builder.spec.ts` cobre exclusão,
+desconexão, desfazer, persistência e visibilidade em desktop/mobile.
+
 - `[P0]` primeira impressão — bug aqui é vergonha pública; prioridade máxima.
 - `[P1]` rotina diária do operador/atendente.
 - `[P2]` exploração/edge.

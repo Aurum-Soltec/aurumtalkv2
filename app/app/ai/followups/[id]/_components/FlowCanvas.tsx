@@ -98,15 +98,38 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
 
   const liveGraph = useMemo(() => fromReactFlow(nodes, edges), [nodes, edges]);
   const dirty = useMemo(() => !graphsEqual(liveGraph, savedGraph), [liveGraph, savedGraph]);
+  const [history, setHistory] = useState<FlowGraph[]>([]);
+  const remember = useCallback(() => {
+    setHistory((previous) => {
+      const last = previous.at(-1);
+      return last && graphsEqual(last, liveGraph)
+        ? previous
+        : [...previous.slice(-99), structuredClone(liveGraph)];
+    });
+  }, [liveGraph]);
+  const undo = () => {
+    const previous = history.at(-1);
+    if (!previous) return;
+    const restored = toReactFlow(previous);
+    setNodes(restored.nodes);
+    setEdges(restored.edges);
+    setHistory(history.slice(0, -1));
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+  };
 
   const markNodeErrors = useCallback(
     (errorsByNode: Record<string, string[]>) => {
-      setNodes((nds) => nds.map((n) => ({ ...n, data: { ...n.data, errors: errorsByNode[n.id] } })));
+      setNodes((nds) =>
+        nds.map((n) => ({ ...n, data: { ...n.data, errors: errorsByNode[n.id] } })),
+      );
     },
     [setNodes],
   );
   const clearNodeErrors = useCallback(() => {
-    setNodes((nds) => nds.map((n) => (n.data.errors ? { ...n, data: { ...n.data, errors: undefined } } : n)));
+    setNodes((nds) =>
+      nds.map((n) => (n.data.errors ? { ...n, data: { ...n.data, errors: undefined } } : n)),
+    );
   }, [setNodes]);
 
   // Node and edge selection are mutually exclusive — opening one panel closes the other's.
@@ -125,23 +148,33 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
 
   const updateNodeData = useCallback(
     (id: string, patch: Partial<RFNodeData>) => {
-      setNodes((nds) => nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...patch } } : n)));
+      remember();
+      setNodes((nds) =>
+        nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...patch } } : n)),
+      );
     },
-    [setNodes],
+    [setNodes, remember],
   );
   const updateEdgeCondition = useCallback(
     (id: string, condition: FlowEdge["condition"]) => {
+      remember();
       setEdges((eds) =>
-        eds.map((e) => (e.id === id ? { ...e, data: { priority: e.data?.priority ?? 0, condition } } : e)),
+        eds.map((e) =>
+          e.id === id ? { ...e, data: { priority: e.data?.priority ?? 0, condition } } : e,
+        ),
       );
     },
-    [setEdges],
+    [setEdges, remember],
   );
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
   const selectedEdge = edges.find((e) => e.id === selectedEdgeId) ?? null;
-  const selectedEdgeSource = selectedEdge ? (nodes.find((n) => n.id === selectedEdge.source) ?? null) : null;
-  const selectedEdgeTarget = selectedEdge ? (nodes.find((n) => n.id === selectedEdge.target) ?? null) : null;
+  const selectedEdgeSource = selectedEdge
+    ? (nodes.find((n) => n.id === selectedEdge.source) ?? null)
+    : null;
+  const selectedEdgeTarget = selectedEdge
+    ? (nodes.find((n) => n.id === selectedEdge.target) ?? null)
+    : null;
 
   // Wire label: derived at render time from `data.condition`, never persisted on the edge
   // itself — `condition` alone stays the source of truth the mapper round-trips.
@@ -181,6 +214,7 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      remember();
       // A bolinha de onde o usuário arrastou É a saída escolhida: o React Flow
       // devolve o id do ramo em `sourceHandle`. Antes a aresta nascia sempre
       // `always` e o usuário tinha que ir ao painel dizer de novo, de qual regra
@@ -190,8 +224,10 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
         source && connection.sourceHandle
           ? conditionForBranch(toFlowNode(source), connection.sourceHandle)
           : null;
+      let id = `edge-${nextEdgeId.current++}`;
+      while (edges.some((edge) => edge.id === id)) id = `edge-${nextEdgeId.current++}`;
       const newEdge: RFEdge = {
-        id: `edge-${nextEdgeId.current++}`,
+        id,
         source: connection.source,
         target: connection.target,
         sourceHandle: connection.sourceHandle,
@@ -200,13 +236,15 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
       };
       setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges, nodes],
+    [setEdges, nodes, edges, remember],
   );
 
   const addNodeAt = useCallback(
     (type: NodeType, position: { x: number; y: number }) => {
+      remember();
       const visual = NODE_VISUALS[type];
-      const id = `${type}-${nextId.current++}`;
+      let id = `${type}-${nextId.current++}`;
+      while (nodes.some((node) => node.id === id)) id = `${type}-${nextId.current++}`;
       const newNode: RFNode = {
         id,
         type,
@@ -215,7 +253,7 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
       };
       setNodes((nds) => nds.concat(newNode));
     },
-    [setNodes, t],
+    [setNodes, nodes, t, remember],
   );
 
   const onPaletteAdd = useCallback(
@@ -272,13 +310,25 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
           </SheetContent>
         </Sheet>
 
-        <div className="relative h-full flex-1" data-testid="flow-canvas" onDragOver={onDragOver} onDrop={onDrop}>
+        <div
+          className="relative h-full flex-1"
+          data-testid="flow-canvas"
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edgesForRender}
             nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
+            onNodesChange={(changes) => {
+              if (changes.some((change) => change.type === "remove")) remember();
+              onNodesChange(changes);
+            }}
+            onEdgesChange={(changes) => {
+              if (changes.some((change) => change.type === "remove")) remember();
+              onEdgesChange(changes);
+            }}
+            onNodeDragStart={remember}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             onEdgeClick={onEdgeClick}
@@ -288,6 +338,16 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
             <Background />
             <Controls />
           </ReactFlow>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="absolute top-4 right-4 z-10 shadow-md"
+            disabled={history.length === 0}
+            onClick={undo}
+          >
+            {t("Desfazer ação")}
+          </Button>
           <Button
             type="button"
             variant="secondary"
@@ -310,7 +370,7 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
         */}
         {selectedNode && (
           <aside
-            className="fixed inset-x-0 bottom-0 z-40 flex max-h-[75vh] flex-col overflow-hidden rounded-t-lg border-t border-border bg-surface shadow-lg lg:static lg:z-auto lg:h-full lg:w-96 lg:max-h-none lg:shrink-0 lg:rounded-none lg:border-l lg:border-t-0 lg:shadow-none"
+            className="border-border bg-surface fixed inset-x-0 bottom-0 z-40 flex max-h-[75vh] flex-col overflow-hidden rounded-t-lg border-t shadow-lg lg:static lg:z-auto lg:h-full lg:max-h-none lg:w-96 lg:shrink-0 lg:rounded-none lg:border-t-0 lg:border-l lg:shadow-none"
             data-testid="node-config-sheet"
           >
             {/* Barra própria pro X, não sobreposta ao conteúdo — um botão
@@ -334,13 +394,57 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
                 onChange={(patch) => updateNodeData(selectedNode.id, patch)}
                 ramosLigados={ramosLigadosDoSelecionado}
               />
+              <div className="border-border mt-4 flex flex-col gap-2 border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={
+                    !edges.some(
+                      (edge) => edge.source === selectedNode.id || edge.target === selectedNode.id,
+                    )
+                  }
+                  onClick={() => {
+                    remember();
+                    setEdges((current) =>
+                      current.filter(
+                        (edge) =>
+                          edge.source !== selectedNode.id && edge.target !== selectedNode.id,
+                      ),
+                    );
+                  }}
+                >
+                  {t("Desconectar box")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    remember();
+                    setEdges((current) =>
+                      current.filter(
+                        (edge) =>
+                          edge.source !== selectedNode.id && edge.target !== selectedNode.id,
+                      ),
+                    );
+                    setNodes((current) => current.filter((node) => node.id !== selectedNode.id));
+                    setSelectedNodeId(null);
+                  }}
+                >
+                  {t("Excluir box")}
+                </Button>
+                <p className="text-text-muted text-xs">
+                  {t(
+                    "Excluir remove o box e suas conexões. Você pode desfazer antes de sair do editor.",
+                  )}
+                </p>
+              </div>
             </div>
           </aside>
         )}
 
         {selectedEdge && (
           <aside
-            className="fixed inset-x-0 bottom-0 z-40 flex max-h-[75vh] flex-col overflow-hidden rounded-t-lg border-t border-border bg-surface shadow-lg lg:static lg:z-auto lg:h-full lg:w-96 lg:max-h-none lg:shrink-0 lg:rounded-none lg:border-l lg:border-t-0 lg:shadow-none"
+            className="border-border bg-surface fixed inset-x-0 bottom-0 z-40 flex max-h-[75vh] flex-col overflow-hidden rounded-t-lg border-t shadow-lg lg:static lg:z-auto lg:h-full lg:max-h-none lg:w-96 lg:shrink-0 lg:rounded-none lg:border-t-0 lg:border-l lg:shadow-none"
             data-testid="edge-config-sheet"
           >
             <div className="flex shrink-0 justify-end p-2 lg:hidden">
@@ -362,6 +466,18 @@ function FlowCanvasInner({ flowId, initialData }: Props) {
                 condition={selectedEdge.data?.condition ?? { type: "always" }}
                 onChange={(condition) => updateEdgeCondition(selectedEdge.id, condition)}
               />
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4"
+                onClick={() => {
+                  remember();
+                  setEdges((current) => current.filter((edge) => edge.id !== selectedEdge.id));
+                  setSelectedEdgeId(null);
+                }}
+              >
+                {t("Remover conexão")}
+              </Button>
             </div>
           </aside>
         )}

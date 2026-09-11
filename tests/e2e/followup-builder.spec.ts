@@ -43,6 +43,105 @@ function loadCreds(): Creds {
 
 let creds = loadCreds();
 
+test.describe("controles reversíveis do editor", () => {
+  test.use({ viewport: { width: 1600, height: 900 } });
+
+  test("excluir, desconectar, desfazer e reabrir preservam o grafo", async ({ page }) => {
+    test.setTimeout(60_000);
+    await login(page, creds.users.manager!.email);
+    const created = await page.request.post("/api/v1/ai/followup-flows", {
+      data: { name: `E2E Controles ${Date.now()}` },
+    });
+    expect(created.status()).toBe(201);
+    const { data: flow } = await created.json() as { data: { id: string } };
+    const graph = {
+      nodes: [
+        { id: "trigger-1", type: "trigger", label: "Início", position: { x: 100, y: 0 }, config: {} },
+        { id: "wait-1", type: "wait", label: "Aguardar", position: { x: 100, y: 200 }, config: { mode: "fixed", duration_ms: 300000 } },
+        { id: "end-1", type: "end", label: "Fim", position: { x: 100, y: 400 }, config: { outcome: "exhausted" } },
+      ],
+      edges: [
+        { id: "edge-1", source: "trigger-1", target: "wait-1", priority: 0, condition: { type: "always" } },
+        { id: "edge-2", source: "wait-1", target: "end-1", priority: 0, condition: { type: "always" } },
+      ],
+    };
+    const patched = await page.request.patch(`/api/v1/ai/followup-flows/${flow.id}`, { data: { draft_graph: graph } });
+    expect(patched.status()).toBe(200);
+    try {
+      await page.goto(`/app/ai/followups/${flow.id}`);
+      const undo = page.getByRole("button", { name: "Desfazer ação", exact: true });
+      const wait = page.getByTestId("node-card-wait-1");
+      const edges = page.locator(".react-flow__edge");
+      await expect(undo).toBeDisabled();
+      await expect(edges).toHaveCount(2);
+      await wait.click();
+      const remove = page.getByRole("button", { name: "Excluir box", exact: true });
+      await expect(remove).toBeInViewport();
+      await expect(page.getByRole("button", { name: "Desconectar box", exact: true })).toBeInViewport();
+      await page.screenshot({ path: "e2e-artifacts/followup-controles-box.png", fullPage: true });
+
+      await remove.click();
+      await expect(wait).toHaveCount(0);
+      await expect(edges).toHaveCount(0);
+      await undo.click();
+      await expect(wait).toBeVisible();
+      await expect(edges).toHaveCount(2);
+      await expect(undo).toBeDisabled();
+
+      await wait.click();
+      await page.getByRole("button", { name: "Desconectar box", exact: true }).click();
+      await expect(wait).toBeVisible();
+      await expect(edges).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Desconectar box", exact: true })).toBeDisabled();
+      await undo.click();
+      await expect(edges).toHaveCount(2);
+
+      await page.locator('[data-testid="rf__edge-edge-1"] .react-flow__edge-textbg').click();
+      await expect(page.getByTestId("edge-config-panel")).toContainText("sem testar uma condição");
+      const disconnect = page.getByRole("button", { name: "Remover conexão", exact: true });
+      await expect(disconnect).toBeInViewport();
+      await page.screenshot({ path: "e2e-artifacts/followup-controles-conexao.png", fullPage: true });
+      await disconnect.click();
+      await expect(edges).toHaveCount(1);
+      await expect(page.locator(".react-flow__node")).toHaveCount(3);
+      await undo.click();
+      await expect(edges).toHaveCount(2);
+
+      // Alterar configuração e desfazer também recupera o estado do formulário.
+      await wait.click();
+      await page.getByLabel("Duração (minutos)").fill("10");
+      await page.getByLabel("Duração (minutos)").blur();
+      await expect(wait).toContainText("10 min");
+      await undo.click();
+      await expect(wait).toContainText("5 min");
+
+      // O contador de IDs de uma sessão nova não pode colidir com o grafo salvo.
+      await page.getByTestId("palette-add-wait").click();
+      await expect(page.locator('.react-flow__node[data-id^="wait-"]')).toHaveCount(2);
+      await undo.click();
+      await expect(page.locator('.react-flow__node[data-id^="wait-"]')).toHaveCount(1);
+
+      await wait.click();
+      await page.getByRole("button", { name: "Desconectar box", exact: true }).click();
+      const saved = page.waitForResponse((response) => response.url().endsWith(`/api/v1/ai/followup-flows/${flow.id}`) && response.request().method() === "PATCH");
+      await page.getByRole("button", { name: "Salvar", exact: true }).click();
+      expect((await saved).status()).toBe(200);
+      await page.reload();
+      await expect(wait).toBeVisible();
+      await expect(edges).toHaveCount(0);
+      await expect(undo).toBeDisabled();
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.locator(".react-flow__controls-fitview").click();
+      await wait.click();
+      await expect(page.getByRole("button", { name: "Excluir box", exact: true })).toBeInViewport();
+      await page.screenshot({ path: "e2e-artifacts/followup-controles-mobile.png", fullPage: true });
+    } finally {
+      await page.request.delete(`/api/v1/ai/followup-flows/${flow.id}`);
+    }
+  });
+});
+
 // ── Precondição de identidade ────────────────────────────────────────────────
 // Esta spec dirige o produto como ADMIN DE TENANT (`creds.users.admin`), o
 // usuário compartilhado por 10 arquivos — e que `seed-e2e-system-update.ts`

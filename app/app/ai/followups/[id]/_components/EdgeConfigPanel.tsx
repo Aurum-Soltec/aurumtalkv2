@@ -34,9 +34,7 @@ interface Props {
  */
 export function EdgeConfigPanel({ sourceNode, targetNode, condition, onChange }: Props) {
   const t = useT();
-  const options = nodeBranches(
-    sourceNode ?? { type: "trigger", config: {} },
-  ).map((branch) => ({
+  const options = nodeBranches(sourceNode ?? { type: "trigger", config: {} }).map((branch) => ({
     key: conditionKey(branch.condition),
     label: t(rotuloDoRamo(branch)),
     condition: branch.condition,
@@ -48,17 +46,17 @@ export function EdgeConfigPanel({ sourceNode, targetNode, condition, onChange }:
   const currentKey = ramoAtual === null ? "" : conditionKey(condition);
 
   return (
-    <div className="flex h-full flex-col gap-5 overflow-y-auto" data-testid="edge-config-panel">
+    <div className="flex flex-col gap-5" data-testid="edge-config-panel">
       <div className="space-y-1">
-        <h2 className="text-base font-semibold text-text">{t("Condição da aresta")}</h2>
-        <p className="flex items-center gap-1.5 text-sm text-text-muted">
+        <h2 className="text-text text-base font-semibold">{t("Condição da aresta")}</h2>
+        <p className="text-text-muted flex items-center gap-1.5 text-sm">
           <span className="truncate">{sourceNode?.label ?? "?"}</span>
           <ArrowRight size={12} aria-hidden className="shrink-0" />
           <span className="truncate">{targetNode?.label ?? "?"}</span>
         </p>
       </div>
 
-      <div className="space-y-2 border-t border-border pt-4">
+      <div className="border-border space-y-2 border-t pt-4">
         <Label htmlFor="edge-condition">{t("Quando seguir por esta aresta")}</Label>
         <Select
           value={currentKey}
@@ -78,9 +76,17 @@ export function EdgeConfigPanel({ sourceNode, targetNode, condition, onChange }:
             ))}
           </SelectContent>
         </Select>
+        {sourceNode && nodeBranches(sourceNode).length === 1 && (
+          <p className="text-text-muted text-xs">
+            {t(
+              "Sempre: ao concluir este box, o fluxo segue para o próximo sem testar uma condição. Para criar caminhos diferentes, adicione um box Condição, Classificar (IA) ou Resposta (texto).",
+            )}
+          </p>
+        )}
         {sourceNode && nodeBranches(sourceNode).length > 1 && (
-          <p className="text-xs text-text-muted">
-            {t("São as saídas do nó")} &quot;{sourceNode.label}&quot; — {t("as mesmas que aparecem no card.")}
+          <p className="text-text-muted text-xs">
+            {t("São as saídas do nó")} &quot;{sourceNode.label}&quot; —{" "}
+            {t("as mesmas que aparecem no card.")}
           </p>
         )}
       </div>

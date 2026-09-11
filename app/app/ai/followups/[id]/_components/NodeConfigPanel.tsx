@@ -53,15 +53,17 @@ export function NodeConfigPanel({ node, onChange, ramosLigados }: Props) {
   };
 
   return (
-    <div className="flex h-full flex-col gap-5 overflow-y-auto" data-testid="node-config-panel">
+    <div className="flex flex-col gap-5" data-testid="node-config-panel">
       <div className="space-y-1">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-text">
-          <span className={`flex h-6 w-6 items-center justify-center rounded-full ${visual.chipClassName}`}>
+        <h2 className="text-text flex items-center gap-2 text-base font-semibold">
+          <span
+            className={`flex h-6 w-6 items-center justify-center rounded-full ${visual.chipClassName}`}
+          >
             <Icon size={14} aria-hidden />
           </span>
           {t(visual.paletteLabel)}
         </h2>
-        <p className="text-sm text-text-muted">
+        <p className="text-text-muted text-sm">
           {t("Alterações aplicam no rascunho ao digitar — salve na barra de publicação.")}
         </p>
       </div>
@@ -74,19 +76,22 @@ export function NodeConfigPanel({ node, onChange, ramosLigados }: Props) {
           maxLength={60}
           onChange={(e) => commitLabel(e.target.value)}
         />
-        {labelError && <p className="text-xs text-error-fg">{labelError}</p>}
+        {labelError && <p className="text-error-fg text-xs">{labelError}</p>}
       </div>
 
-      <div className="space-y-4 border-t border-border pt-4">
+      <div className="border-border space-y-4 border-t pt-4">
         {type === "trigger" && (
-          <p className="text-sm text-text-muted">
+          <p className="text-text-muted text-sm">
             {t(
               "Início do fluxo — sem configuração adicional. O disparo (manual, mudança de etapa, silêncio ou fim de conversa) é definido nas configurações do fluxo.",
             )}
           </p>
         )}
         {type === "wait" && (
-          <WaitForm config={node.data.config as ConfigOf<"wait">} onChange={(config) => onChange({ config })} />
+          <WaitForm
+            config={node.data.config as ConfigOf<"wait">}
+            onChange={(config) => onChange({ config })}
+          />
         )}
         {type === "condition" && (
           <ConditionForm
@@ -114,10 +119,16 @@ export function NodeConfigPanel({ node, onChange, ramosLigados }: Props) {
           />
         )}
         {type === "action" && (
-          <ActionForm config={node.data.config as ConfigOf<"action">} onChange={(config) => onChange({ config })} />
+          <ActionForm
+            config={node.data.config as ConfigOf<"action">}
+            onChange={(config) => onChange({ config })}
+          />
         )}
         {type === "end" && (
-          <EndForm config={node.data.config as ConfigOf<"end">} onChange={(config) => onChange({ config })} />
+          <EndForm
+            config={node.data.config as ConfigOf<"end">}
+            onChange={(config) => onChange({ config })}
+          />
         )}
       </div>
     </div>
