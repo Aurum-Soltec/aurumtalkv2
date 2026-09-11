@@ -11,6 +11,9 @@ const uploadResult = {
 const uploadMock = vi.fn(async () => uploadResult);
 const sendMock = vi.fn();
 
+// Este cenário monta um atendente autorizado fora do layout autenticado.
+vi.mock("@/hooks/auth/AuthProvider", () => ({ usePermission: () => true }));
+
 vi.mock("@/hooks/inbox/useUploadMedia", () => ({
   useUploadMedia: () => ({ mutateAsync: uploadMock, isPending: false }),
 }));
