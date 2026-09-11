@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
+import { usePermission } from "@/hooks/auth/AuthProvider";
 
 const DEBOUNCE_MS = 1500;
 
@@ -10,6 +11,7 @@ const DEBOUNCE_MS = 1500;
  * Só chama a API quando unread > 0 para evitar writes desnecessários.
  */
 export function useMarkAsRead(conversationId: string | null, unread: number) {
+  const canMarkRead = usePermission("inbox.mark_read");
   const qc = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -28,7 +30,8 @@ export function useMarkAsRead(conversationId: string | null, unread: number) {
       timerRef.current = null;
     }
 
-    if (!conversationId || unread <= 0) return;
+    // Observar em somente leitura não pode alterar o contador de quem atende.
+    if (!canMarkRead || !conversationId || unread <= 0) return;
 
     timerRef.current = setTimeout(() => {
       mutate(conversationId);
@@ -37,5 +40,5 @@ export function useMarkAsRead(conversationId: string | null, unread: number) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [conversationId, unread, mutate]);
+  }, [canMarkRead, conversationId, unread, mutate]);
 }

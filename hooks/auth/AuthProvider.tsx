@@ -112,6 +112,7 @@ const ACTION_MIN_ROLE: Record<string, Role> = {
   "inbox.view": "viewer",
   "inbox.reply": "agent",
   "inbox.claim": "agent",
+  "inbox.mark_read": "agent",
   "contact.view": "viewer",
   "contact.create": "agent",
   "contact.update": "agent",
